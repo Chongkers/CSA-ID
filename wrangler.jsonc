@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "csa-id",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "csa-id"
+    }
+  ],
+  // Workers Free plan only: no R2, nothing that needs billing enrollment.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "csa-id",
+      "database_id": "e10ae114-9102-4133-8305-b349f5497788"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "0ff2270b1f6e431fb53814834f29cd30"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

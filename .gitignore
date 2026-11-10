@@ -19,3 +19,8 @@
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+
+# Cloudflare Workers build and local state
+/.open-next
+/.wrangler
+.dev.vars*

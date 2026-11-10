@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { getCurrentAccount } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
+import { purgeProfilePage } from "@/lib/edge-cache";
 import { draftSocialLinks, profiles, publishedProfiles, publishedSocialLinks, reservedSlugs } from "@/lib/db/schema";
 
 export async function POST(request: Request) {
@@ -28,5 +29,6 @@ export async function POST(request: Request) {
   ];
   try { await db.batch(queries as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]]); }
   catch { return NextResponse.json({ error: "That permanent profile address is already taken" }, { status: 409 }); }
+  await purgeProfilePage(profile.slug, request.url);
   return NextResponse.json({ ok: true, slug: profile.slug });
 }

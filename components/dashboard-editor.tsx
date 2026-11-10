@@ -21,6 +21,8 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
   const [role, setRole] = useState(initial.profile.role);
   const [bio, setBio] = useState(initial.profile.bio);
   const [slug, setSlug] = useState(initial.profile.slug || "");
+  const [claimedSlug, setClaimedSlug] = useState(initial.profile.slug);
+  const [slugError, setSlugError] = useState("");
   const [color, setColor] = useState(initial.profile.accentColor);
   const [evaluationUrl, setEvaluationUrl] = useState(initial.profile.evaluationUrl || "");
   const [links, setLinks] = useState(initial.links.map((link) => ({ service: link.service as ProfileService, url: link.url })));
@@ -30,7 +32,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
   const avatarInput = useRef<HTMLInputElement>(null);
   const backgroundInput = useRef<HTMLInputElement>(null);
 
-  const payload = () => ({ displayName: name, role, bio, slug: slug || null, accentColor: color, evaluationUrl, links });
+  const payload = () => ({ displayName: name, role, bio, accentColor: color, evaluationUrl, links });
 
   async function save(showNotice = true) {
     setBusy(true); if (showNotice) setNotice("Saving draft…");
@@ -42,6 +44,15 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
     return true;
   }
 
+  async function claim() {
+    setBusy(true); setSlugError("");
+    const response = await fetch("/api/profile/slug", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slug }) });
+    const result = await response.json() as { error?: string; slug?: string };
+    setBusy(false);
+    if (!response.ok || !result.slug) return setSlugError(result.error || "Address could not be claimed");
+    setClaimedSlug(result.slug); setSlug(result.slug); setNotice("Permanent address claimed");
+  }
+
   async function publish() {
     if (!(await save(false))) return;
     setBusy(true); setNotice("Publishing profile…");
@@ -50,7 +61,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
     setBusy(false);
     if (!response.ok) return setNotice(result.error || "Profile could not be published");
     setNotice("Profile published");
-    if (result.slug) setSlug(result.slug);
+    if (result.slug) { setSlug(result.slug); setClaimedSlug(result.slug); }
   }
 
   async function upload(kind: "avatar" | "background", file?: File) {
@@ -74,7 +85,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
     <main className="dashboard">
       <header className="dashboardHeader">
         <Brand />
-        <div className="dashboardActions"><span className="saveState" role="status"><i />{notice}</span>{slug && <Link className="buttonSecondary buttonSmall" href={`/id/${slug}`}>View profile</Link>}<button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={() => save()}>Save draft</button><button className="button buttonSmall" disabled={busy} type="button" onClick={publish}>Publish profile</button></div>
+        <div className="dashboardActions"><span className="saveState" role="status"><i />{notice}</span>{claimedSlug && <Link className="buttonSecondary buttonSmall" href={`/id/${slug}`}>View profile</Link>}<button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={() => save()}>Save draft</button><button className="button buttonSmall" disabled={busy} type="button" onClick={publish}>Publish profile</button></div>
       </header>
       <div className="dashboardBody">
         <aside className="dashboardNav">
@@ -90,7 +101,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
             <label className="field">Role or title<input value={role} maxLength={128} onChange={(event) => setRole(event.target.value)} /></label>
             <label className="field">Short bio<textarea value={bio} maxLength={500} rows={4} onChange={(event) => setBio(event.target.value)} /><span>{bio.length}/500</span></label>
             <label className="field">Evaluation form URL<input type="url" value={evaluationUrl} placeholder="https://forms.google.com/…" onChange={(event) => setEvaluationUrl(event.target.value)} /></label>
-            <label className="field">Permanent profile address<div className="slugField"><span>/id/</span><input value={slug} disabled={Boolean(initial.profile.slug)} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" aria-label="Profile slug" onChange={(event) => setSlug(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} /></div><small>{initial.profile.slug ? "This permanent address is locked." : "Choose carefully. This address locks when you publish."}</small></label>
+            <label className="field">Permanent profile address<div className="slugField"><span>/id/</span><input value={slug} disabled={Boolean(claimedSlug)} maxLength={64} aria-label="Profile slug" onChange={(event) => setSlug(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} />{!claimedSlug && <button className="buttonSecondary buttonSmall" disabled={busy || slug.length < 3} type="button" onClick={claim}>Claim address</button>}</div><small role={slugError ? "alert" : undefined}>{slugError || (claimedSlug ? "This permanent address is locked." : "Choose carefully. Once claimed, this address can never change.")}</small></label>
           </div>}
 
           {section === "Appearance" && <div className="formStack">

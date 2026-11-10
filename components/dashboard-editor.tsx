@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Brand } from "./brand";
 import { ProfileCard } from "./profile-card";
@@ -16,6 +17,7 @@ export type DashboardData = {
 };
 
 export function DashboardEditor({ initial }: { initial: DashboardData }) {
+  const router = useRouter();
   const [section, setSection] = useState<(typeof sections)[number]>("Profile");
   const [name, setName] = useState(initial.profile.displayName);
   const [role, setRole] = useState(initial.profile.role);
@@ -91,6 +93,14 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
     setNotice(`${kind === "avatar" ? "Photo" : "Background"} uploaded`);
   }
 
+  async function deleteAccount() {
+    if (!window.confirm("Delete your account? This removes your profile and images and cannot be undone. Your profile address stays reserved.")) return;
+    setBusy(true); setNotice("Deleting account…");
+    const response = await fetch("/api/account", { method: "DELETE" });
+    if (!response.ok) { setBusy(false); const result = await response.json().catch(() => ({})) as { error?: string }; return setNotice(result.error || "Account could not be deleted"); }
+    router.push("/");
+  }
+
   function addLink() {
     const service = services.find((candidate) => !links.some((link) => link.service === candidate));
     if (service) setLinks([...links, { service, url: "" }]);
@@ -105,7 +115,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
       <div className="dashboardBody">
         <aside className="dashboardNav">
           <div><p className="navLabel">Workspace</p>{sections.map((item) => <button key={item} type="button" className={section === item ? "selected" : ""} onClick={() => setSection(item)}><span>{item.slice(0, 1)}</span>{item}</button>)}</div>
-          <div><div className="accountCard"><span>{initial.user.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><div><strong>{initial.user.name}</strong><small>{initial.user.email}</small></div></div><form action="/logout" method="post"><button className="logoutButton" type="submit">Sign out</button></form></div>
+          <div><div className="accountCard"><span>{initial.user.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><div><strong>{initial.user.name}</strong><small>{initial.user.email}</small></div></div><a className="logoutButton" href="/api/profile/export" download>Export my data</a><button className="logoutButton" disabled={busy} type="button" onClick={deleteAccount}>Delete account</button><form action="/logout" method="post"><button className="logoutButton" type="submit">Sign out</button></form></div>
         </aside>
         <section className="editorPane">
           <div className="editorHeading"><div><h1>{section}</h1><p className="headingContext">Private draft. Publishing or unpublishing can take up to 60 seconds to reach every location.</p></div><span className="statusBadge">{status === "published" ? "Published" : status === "suspended" ? "Suspended" : "Not published"}</span></div>

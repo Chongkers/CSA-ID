@@ -233,6 +233,7 @@ h1, h2, h3 { letter-spacing: -.035em; line-height: 1.02; text-wrap: balance; }
 .socialLinkLabel svg { width: 21px; height: 21px; flex: 0 0 auto; color: #78121a; }
 .externalLinkIcon { width: 18px; height: 18px; flex: 0 0 auto; color: #78121a; }
 .logoutButton { width: 100%; min-height: 42px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--muted); font-weight: 600; cursor: pointer; }
+a.logoutButton { display: flex; align-items: center; justify-content: center; text-decoration: none; }
 .linkRow select { width: 100%; margin-bottom: 8px; border: 1px solid #bfc3ba; background: white; border-radius: 8px; padding: 10px 12px; color: var(--ink); }
 .button:disabled, .buttonSecondary:disabled { cursor: wait; opacity: .58; transform: none; }
 .reportForm { display: grid; gap: 22px; }

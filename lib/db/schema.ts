@@ -87,7 +87,7 @@ export const abuseReports = sqliteTable("abuse_reports", {
 
 export const reservedSlugs = sqliteTable("reserved_slugs", {
   slug: text("slug").primaryKey(),
-  profileId: text("profile_id").notNull().unique().references(() => profiles.id, { onDelete: "restrict" }),
+  profileId: text("profile_id").unique().references(() => profiles.id, { onDelete: "set null" }),
   createdAt: integer("created_at").notNull().default(unixNow),
 });
 

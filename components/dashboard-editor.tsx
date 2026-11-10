@@ -27,6 +27,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
   const [notice, setNotice] = useState("Draft loaded");
   const [busy, setBusy] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(initial.profile.avatarKey ? `/media/${initial.profile.avatarKey}` : "");
+  const [backgroundUrl, setBackgroundUrl] = useState(initial.profile.backgroundKey ? `/media/${initial.profile.backgroundKey}` : "");
   const avatarInput = useRef<HTMLInputElement>(null);
   const backgroundInput = useRef<HTMLInputElement>(null);
 
@@ -53,15 +54,18 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
     if (result.slug) setSlug(result.slug);
   }
 
-  async function upload(kind: "avatar" | "background", file?: File) {
+  async function upload(kind: "avatar" | "background", input: HTMLInputElement) {
+    const file = input.files?.[0];
+    input.value = "";
     if (!file) return;
     setBusy(true); setNotice(`Uploading ${kind}…`);
     const form = new FormData(); form.set("file", file);
-    const response = await fetch(`/api/uploads/${kind}`, { method: "POST", body: form });
-    const result = await response.json() as { error?: string; url?: string };
+    let response: Response;
+    try { response = await fetch(`/api/uploads/${kind}`, { method: "POST", body: form }); } catch { setBusy(false); return setNotice("Upload failed. Check your connection."); }
+    const result = await response.json().catch(() => ({})) as { error?: string; url?: string };
     setBusy(false);
     if (!response.ok) return setNotice(result.error || "Upload failed");
-    if (kind === "avatar" && result.url) setAvatarUrl(result.url);
+    if (result.url) (kind === "avatar" ? setAvatarUrl : setBackgroundUrl)(result.url);
     setNotice(`${kind === "avatar" ? "Photo" : "Background"} uploaded`);
   }
 
@@ -85,7 +89,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
           <div className="editorHeading"><div><h1>{section}</h1><p className="headingContext">Private draft</p></div><span className="statusBadge">{initial.profile.status === "published" ? "Published" : "Not published"}</span></div>
 
           {section === "Profile" && <div className="formStack">
-            <div className="uploadRow"><div className="avatar avatarSmall" style={avatarUrl ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: "cover" } : undefined}>{avatarUrl ? "" : name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</div><div><input ref={avatarInput} hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => upload("avatar", event.target.files?.[0])} /><button className="buttonSecondary buttonSmall" type="button" onClick={() => avatarInput.current?.click()}>Choose photo</button><p>JPEG, PNG, or WebP. Up to 2 MB.</p></div></div>
+            <div className="uploadRow"><div className="avatar avatarSmall" style={avatarUrl ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: "cover" } : undefined}>{avatarUrl ? "" : name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</div><div><input ref={avatarInput} hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => upload("avatar", event.target)} /><button className="buttonSecondary buttonSmall" type="button" onClick={() => avatarInput.current?.click()}>Choose photo</button><p>JPEG, PNG, or WebP. Up to 2 MB.</p></div></div>
             <label className="field">Display name<input value={name} maxLength={128} onChange={(event) => setName(event.target.value)} /></label>
             <label className="field">Role or title<input value={role} maxLength={128} onChange={(event) => setRole(event.target.value)} /></label>
             <label className="field">Short bio<textarea value={bio} maxLength={500} rows={4} onChange={(event) => setBio(event.target.value)} /><span>{bio.length}/500</span></label>
@@ -94,7 +98,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
           </div>}
 
           {section === "Appearance" && <div className="formStack">
-            <div className="backgroundUpload"><div><strong>Background image</strong><p>JPEG, PNG, or WebP. Up to 4 MB.</p></div><input ref={backgroundInput} hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => upload("background", event.target.files?.[0])} /><button className="buttonSecondary buttonSmall" type="button" onClick={() => backgroundInput.current?.click()}>Choose background</button></div>
+            <div className="backgroundUpload"><div><strong>Background image</strong><p>JPEG, PNG, or WebP. Up to 4 MB.</p></div><input ref={backgroundInput} hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => upload("background", event.target)} /><button className="buttonSecondary buttonSmall" type="button" onClick={() => backgroundInput.current?.click()}>Choose background</button></div>
             <label className="field">Profile color<div className="colorField"><input type="color" value={color} onChange={(event) => setColor(event.target.value)} /><input value={color.toUpperCase()} onChange={(event) => /^#[0-9a-fA-F]{0,6}$/.test(event.target.value) && setColor(event.target.value)} /></div></label>
           </div>}
 
@@ -106,7 +110,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
         </section>
         <aside className="previewPane">
           <div className="previewHeader"><div><p>Live preview</p><span>Mobile</span></div>{slug && <Link className="previewOpen" href={`/id/${slug}`} aria-label="Open published profile">Open</Link>}</div>
-          <div className="phoneFrame"><div className="phoneTop"><span /></div><ProfileCard compact name={name || "Your name"} role={role} bio={bio} primary={color} /></div>
+          <div className="phoneFrame"><div className="phoneTop"><span /></div><ProfileCard compact name={name || "Your name"} role={role} bio={bio} primary={color} avatarUrl={avatarUrl} coverUrl={backgroundUrl} /></div>
         </aside>
       </div>
     </main>

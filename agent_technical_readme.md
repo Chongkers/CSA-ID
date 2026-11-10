@@ -54,7 +54,7 @@ No custom domain is currently available. Treat all provider URLs, including the 
 | --- | --- | --- |
 | Web application | Next.js App Router on Cloudflare Workers Free through the OpenNext Cloudflare adapter (`@opennextjs/cloudflare`) | Static-first public pages; dynamic authenticated dashboard; compressed Worker bundle within the Free plan size limit |
 | Database | Cloudflare D1 Free (SQLite), accessed only through Drizzle ORM | Schema and migrations in Drizzle; authorization enforced in server code (see section 5) |
-| Authentication | Google OIDC through Arctic, with server-side Sessions stored in D1 | Request only `openid`, `email`, and `profile`; no third-party auth service |
+| Authentication | Google OIDC through `oauth4webapi`, with server-side Sessions stored in D1 | Request only `openid`, `email`, and `profile`; no third-party auth service |
 | Image storage | Workers KV Free | Store sanitized derivatives only; never store original uploads |
 | Upload sanitization | Cloudflare Workers Free with the Images Free binding | Decode, resize, strip metadata, and re-encode before storage |
 | Abuse challenge | Cloudflare Turnstile when risk signals trigger | Protect signup-adjacent and upload/report endpoints |
@@ -72,7 +72,7 @@ D1 and KV Free quotas (rows read and written per day, KV reads and writes per da
 
 ### Google login
 
-- Implement the Google OAuth authorization-code flow with Arctic, using `state` and PKCE.
+- Implement the Google OAuth authorization-code flow with `oauth4webapi`, using `state`, nonce, and PKCE.
 - Request only the `openid`, `email`, and `profile` scopes.
 - Verify the ID token claims (issuer, audience, expiry) and require `email_verified`.
 - Identify a User by Google's subject ID (`sub`), never by email address.
@@ -396,7 +396,7 @@ Never retain the source upload. If the Images transformation quota or the KV wri
 
 An implementation is incomplete until all applicable checks pass:
 
-- [ ] Google (through Arctic) is the only v1 authentication method; no Google access, refresh, or ID tokens are persisted.
+- [ ] Google (through `oauth4webapi`) is the only v1 authentication method; no Google access, refresh, or ID tokens are persisted.
 - [ ] Sessions store only a token hash in D1; expired, tampered, and signed-out Session cookies are rejected.
 - [ ] The app builds and runs on Cloudflare Workers Free through OpenNext, within the Free plan bundle size limit, with no R2 or paid plan.
 - [ ] One User cannot create or own a second Profile.

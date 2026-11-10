@@ -2,7 +2,7 @@
  "start": "2026-11-09T12:32:23.903Z",
  "round": 0,
  "idle": 0,
- "errors": 2,
+ "errors": 3,
  "status": "error",
  "history": [
   {
@@ -22,23 +22,32 @@
    "round": 0,
    "reused": false,
    "stopHookActive": false
+  },
+  {
+   "at": "2026-11-10T07:01:43.896Z",
+   "mode": "manual",
+   "status": "error",
+   "fails": 0,
+   "round": 0,
+   "reused": false,
+   "stopHookActive": false
   }
  ],
  "max": 3,
  "marker": {
   "page": null,
-  "url": "http://localhost:3002/",
+  "url": "http://localhost:3006/",
   "root": null,
   "kind": "software",
-  "category": "student assistant NFC profile",
-  "primary": "Open your dashboard",
+  "category": "student assistant profile system",
+  "primary": "Continue with Google",
   "rounds": 3,
   "start": "2026-11-09T12:32:23.903Z",
   "by": "gate.mjs --start"
  },
  "manual": true,
- "fp": "71787a5f3bad5451",
- "page": "http://localhost:3002/",
+ "fp": "5c5e22bbd72b8380",
+ "page": "http://localhost:3006/",
  "found": {
   "fails": [],
   "warns": [],
@@ -48,13 +57,13 @@
    "check.mjs could not run (exit 2: check: timed out)"
   ],
   "seconds": {
-   "consistency": 4,
-   "layout": 241
+   "consistency": 1,
+   "layout": 240
   }
  },
  "open": [],
  "waived": [],
  "warnCount": 0,
  "note": "the copy (the page showed no <main>, <section> or <h1> to lint); consistency.mjs could not walk 1440, 390; check.mjs could not run (exit 2: check: timed out)",
- "at": "2026-11-10T04:41:54.998Z"
+ "at": "2026-11-10T07:01:43.897Z"
 }

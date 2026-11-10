@@ -1,57 +1,52 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { MapuaSquares } from "@/components/mapua-squares";
 import { SocialIcon, type SocialPlatform } from "@/components/social-icon";
+import { getDb } from "@/lib/db";
+import { publishedProfiles, publishedSocialLinks } from "@/lib/db/schema";
 
-const socialLinks: Array<{ label: string; href: string; platform: SocialPlatform }> = [
-  { label: "LinkedIn", href: "https://linkedin.com", platform: "linkedin" },
-  { label: "Instagram", href: "https://instagram.com", platform: "instagram" },
-  { label: "Facebook", href: "https://facebook.com", platform: "facebook" },
-  { label: "GitHub", href: "https://github.com", platform: "github" },
-  { label: "Website", href: "https://example.com", platform: "website" },
-];
+export const revalidate = 300;
+export function generateStaticParams() { return [{ slug: "demo" }]; }
 
-export function generateStaticParams() {
-  return [{ slug: "demo" }];
+const demo = {
+  profileId: "demo", slug: "demo", displayName: "Alex Santos", role: "Student assistant", bio: "Peer adviser for tutoring sessions at the Center for Student Advising.", accentColor: "#B5121B", avatarKey: null, backgroundKey: null, evaluationUrl: "https://forms.example/evaluation",
+  links: [
+    { service: "linkedin", url: "https://linkedin.com" }, { service: "instagram", url: "https://instagram.com" }, { service: "facebook", url: "https://facebook.com" }, { service: "github", url: "https://github.com" }, { service: "website", url: "https://example.com" },
+  ],
+};
+const labels: Record<string, string> = { linkedin: "LinkedIn", instagram: "Instagram", facebook: "Facebook", github: "GitHub", youtube: "YouTube", tiktok: "TikTok", x: "X", website: "Website" };
+
+async function loadProfile(slug: string) {
+  if (slug === "demo") return demo;
+  const db = getDb();
+  const [profile] = await db.select().from(publishedProfiles).where(eq(publishedProfiles.slug, slug)).limit(1);
+  if (!profile) return null;
+  const links = await db.select({ service: publishedSocialLinks.service, url: publishedSocialLinks.url }).from(publishedSocialLinks).where(eq(publishedSocialLinks.profileId, profile.profileId)).orderBy(publishedSocialLinks.displayOrder);
+  return { ...profile, links };
 }
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (slug !== "demo") notFound();
+  const profile = await loadProfile(slug);
+  if (!profile) notFound();
+  const initials = profile.displayName.split(" ").map((part) => part[0]).slice(0, 2).join("");
+  const avatarUrl = profile.avatarKey ? `/media/${profile.avatarKey}` : null;
+  const backgroundUrl = profile.backgroundKey ? `/media/${profile.backgroundKey}` : null;
 
   return (
-    <main
-      className="publicProfile"
-      data-has-user-background="false"
-      style={{ "--profile-background-image": "none" } as React.CSSProperties}
-    >
-      <Link className="publicBack" href="/" aria-label="Back to home">
-        <span aria-hidden="true">&larr;</span>
-        Back to home
-      </Link>
-      <div className="publicBackdrop" aria-hidden="true">
-        <MapuaSquares className="publicSquares publicSquaresPrimary" />
-        <MapuaSquares className="publicSquares publicSquaresSecondary" />
-      </div>
+    <main className="publicProfile" data-has-user-background={Boolean(backgroundUrl)} style={{ "--profile-background-image": backgroundUrl ? `url(${backgroundUrl})` : "none", "--profile-accent": profile.accentColor } as React.CSSProperties}>
+      <Link className="publicBack" href="/" aria-label="Back to home"><span aria-hidden="true">&larr;</span>Back to home</Link>
+      <div className="publicBackdrop" aria-hidden="true"><MapuaSquares className="publicSquares publicSquaresPrimary" /><MapuaSquares className="publicSquares publicSquaresSecondary" /></div>
       <section className="publicCard">
         <Image className="publicCsaLogo" src="/brand/csa-logo.jpg" width={64} height={64} alt="Mapúa University Center for Student Advising" />
-        <div className="publicAvatar">AS</div>
-        <h1>Alex Santos</h1>
-        <p className="publicKicker">Student assistant</p>
-        <p className="publicBio">Peer adviser for tutoring sessions at the Center for Student Advising.</p>
-        <a className="evaluationButton" href="https://forms.example/evaluation" rel="noreferrer">Open session evaluation</a>
-        <nav className="publicLinks" aria-label="Alex Santos links">
-          {socialLinks.map(({ label, href, platform }) => (
-            <a href={href} target="_blank" rel="noreferrer" key={platform} aria-label={`Open ${label} in a new tab`}>
-              <span className="socialLinkLabel"><SocialIcon platform={platform} />{label}</span>
-              <SocialIcon className="externalLinkIcon" platform="external" />
-            </a>
-          ))}
-        </nav>
-        <button className="saveContact publicSave" type="button">Save contact</button>
-        <p className="providedNotice">This profile contains user-provided information.</p>
-        <Link className="reportLink" href="/report">Report this profile</Link>
+        <div className="publicAvatar" style={avatarUrl ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>{avatarUrl ? "" : initials}</div>
+        <h1>{profile.displayName}</h1><p className="publicKicker">{profile.role}</p><p className="publicBio">{profile.bio}</p>
+        <a className="evaluationButton" href={profile.evaluationUrl} target="_blank" rel="noreferrer">Open session evaluation <SocialIcon className="buttonExternalIcon" platform="external" /></a>
+        {profile.links.length > 0 && <nav className="publicLinks" aria-label={`${profile.displayName} links`}>{profile.links.map(({ service, url }) => <a href={url} target="_blank" rel="noreferrer" key={service} aria-label={`Open ${labels[service] || service} in a new tab`}><span className="socialLinkLabel"><SocialIcon platform={(service in labels ? service : "website") as SocialPlatform} />{labels[service] || service}</span><SocialIcon className="externalLinkIcon" platform="external" /></a>)}</nav>}
+        <a className="saveContact publicSave" href={`data:text/vcard;charset=utf-8,${encodeURIComponent(`BEGIN:VCARD\nVERSION:3.0\nFN:${profile.displayName}\nTITLE:${profile.role}\nEND:VCARD`)}`} download={`${slug}.vcf`}>Save contact</a>
+        <p className="providedNotice">This profile contains user-provided information.</p><Link className="reportLink" href={`/report?profile=${encodeURIComponent(slug)}`}>Report this profile</Link>
       </section>
       <Link className="profileBrand" href="/">Mapúa University CSA</Link>
     </main>

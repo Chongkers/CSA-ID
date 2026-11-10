@@ -28,6 +28,9 @@
       "id": "0ff2270b1f6e431fb53814834f29cd30"
     }
   ],
+  "images": {
+    "binding": "IMAGES"
+  },
   "observability": {
     "enabled": true
   }

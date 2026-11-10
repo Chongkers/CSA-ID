@@ -5,5 +5,5 @@ import nextTs from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores([".next/**", "out/**", ".open-next/**", ".wrangler/**", "cloudflare-env.d.ts"]),
+  globalIgnores([".next/**", "out/**", ".open-next/**", ".wrangler/**", ".impeccable/**", ".taste-skill/**", "cloudflare-env.d.ts"]),
 ]);

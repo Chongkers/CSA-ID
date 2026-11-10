@@ -10,6 +10,8 @@
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply csa-id --local",
     "db:migrate:remote": "wrangler d1 migrations apply csa-id --remote"
   },
@@ -21,6 +23,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "scheduler": "^0.27.0",
+    "server-only": "^0.0.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -28,10 +31,13 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.0",
     "eslint-visitor-keys": "^3.4.3",
+    "miniflare": "^4.20260730.0",
     "typescript": "^5.9.0",
+    "vitest": "^5.1.0",
     "wrangler": "^4.159.0"
   }
 }

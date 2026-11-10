@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Brand } from "@/components/brand";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  if (await getCurrentUser()) redirect("/dashboard");
   const { error } = await searchParams;
   return (
     <main className="authPage" id="main">

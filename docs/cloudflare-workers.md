@@ -48,3 +48,27 @@ After you change `wrangler.jsonc`, run `npm run cf-typegen` to regenerate `cloud
 ## Images
 
 `next.config.ts` sets `images.unoptimized`. Next.js image optimization on Workers needs the Cloudflare Images binding, which can bill, so `<Image>` serves the original file.
+
+## Google sign-in and the database
+
+Sign-in uses Arctic with Google OAuth. Users and Sessions live in D1, with the schema in `lib/db/schema.ts` and migrations in `migrations/`.
+
+Add the OAuth client to `.dev.vars` for local work (git ignores it):
+
+```
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+```
+
+Create the OAuth client in Google Cloud Console with the redirect URI `<origin>/login/google/callback`, for example `http://localhost:8787/login/google/callback` locally and `https://csa-id.yuanmiguelrubio.workers.dev/login/google/callback` deployed. For production, set the same names with `wrangler secret put`.
+
+Change the schema, then generate and apply a migration:
+
+```bash
+npm run db:generate
+npm run db:migrate:local
+```
+
+Apply to the remote database with `npx wrangler d1 migrations apply csa-id --remote`.
+
+Run the tests with `npm test`. They apply the migrations to an in-memory D1 through Miniflare.

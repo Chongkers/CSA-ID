@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { profiles, users } from "@/lib/db/schema";
 import { googleConfig, googleIssuer } from "@/lib/auth/google";
-import { createSession, SESSION_COOKIE } from "@/lib/auth/session";
+import { createSession, SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth/session";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -34,9 +34,9 @@ export async function GET(request: Request) {
     const [profile] = await db.select().from(profiles).where(and(eq(profiles.userId, userId))).limit(1);
     if (!profile) await db.insert(profiles).values({ id: crypto.randomUUID(), userId, slug: null, displayName: name, role: "Student assistant", bio: "", accentColor: "#B5121B", avatarKey: null, backgroundKey: null, evaluationUrl: null, status: "draft", createdAt: now, updatedAt: now });
 
-    const session = await createSession(userId);
+    const token = await createSession(db, userId);
     const response = NextResponse.redirect(new URL("/dashboard", request.url));
-    response.cookies.set(SESSION_COOKIE, session.token, { httpOnly: true, secure: requestUrl.protocol === "https:", sameSite: "lax", path: "/", maxAge: session.maxAge });
+    response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions);
     response.cookies.delete("oauth_state"); response.cookies.delete("oauth_nonce"); response.cookies.delete("oauth_verifier");
     return response;
   } catch (error) {

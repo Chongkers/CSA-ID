@@ -30,6 +30,19 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
   const avatarInput = useRef<HTMLInputElement>(null);
   const backgroundInput = useRef<HTMLInputElement>(null);
 
+  const userDisplayName = (initial.user.name && initial.user.name.trim().length > 0 && initial.user.name !== initial.user.email)
+    ? initial.user.name
+    : initial.user.email.split("@")[0];
+
+  const userInitials = (
+    userDisplayName
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("") || initial.user.email.slice(0, 2)
+  ).toUpperCase();
+
   const payload = () => ({ displayName: name, role, bio, slug: slug || null, accentColor: color, evaluationUrl, links });
 
   async function save(showNotice = true) {
@@ -78,8 +91,40 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
       </header>
       <div className="dashboardBody">
         <aside className="dashboardNav">
-          <div><p className="navLabel">Workspace</p>{sections.map((item) => <button key={item} type="button" className={section === item ? "selected" : ""} onClick={() => setSection(item)}><span>{item.slice(0, 1)}</span>{item}</button>)}</div>
-          <div><div className="accountCard"><span>{initial.user.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><div><strong>{initial.user.name}</strong><small>{initial.user.email}</small></div></div><form action="/logout" method="post"><button className="logoutButton" type="submit">Sign out</button></form></div>
+          <div>
+            <p className="navLabel">Workspace</p>
+            {sections.map((item) => (
+              <button
+                key={item}
+                type="button"
+                className={section === item ? "selected" : ""}
+                onClick={() => setSection(item)}
+              >
+                <span>{item.slice(0, 1)}</span>
+                {item}
+              </button>
+            ))}
+          </div>
+
+          <div className="dashboardNavFooter">
+            <div className="accountCard">
+              <span className="accountAvatar" aria-hidden="true">{userInitials}</span>
+              <div className="accountInfo">
+                <strong className="accountName" title={userDisplayName}>{userDisplayName}</strong>
+                <small className="accountEmail" title={initial.user.email}>{initial.user.email}</small>
+              </div>
+            </div>
+            <form action="/logout" method="post" className="logoutForm">
+              <button className="logoutButton" type="submit" aria-label="Sign out">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span>Sign out</span>
+              </button>
+            </form>
+          </div>
         </aside>
         <section className="editorPane">
           <div className="editorHeading"><div><h1>{section}</h1><p className="headingContext">Private draft</p></div><span className="statusBadge">{initial.profile.status === "published" ? "Published" : "Not published"}</span></div>

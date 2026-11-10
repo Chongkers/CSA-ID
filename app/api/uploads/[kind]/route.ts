@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentAccount } from "@/lib/auth/current-user";
 import { getBindings } from "@/lib/cloudflare";
 import { getDb } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
@@ -8,7 +8,7 @@ import { profiles } from "@/lib/db/schema";
 export async function POST(request: Request, { params }: { params: Promise<{ kind: string }> }) {
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
-  const account = await getCurrentUser();
+  const account = await getCurrentAccount();
   if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { kind } = await params;
   if (kind !== "avatar" && kind !== "background") return NextResponse.json({ error: "Unknown upload type" }, { status: 404 });

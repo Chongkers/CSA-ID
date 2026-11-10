@@ -49,7 +49,7 @@ This is a tutoring-session identity and evaluation handoff for Mapúa University
 
 ## Brand Commitments
 
-“Digital Profile” is a temporary working name. The product may use the Mapúa University and Center for Student Advising names, logos, and official branding with authorization. Final brand assets and the permanent product name have not yet been supplied.
+“Digital Profile” is a temporary working name. The product may use the Mapúa University and Center for Student Advising names, logos, and official branding with authorization. The supplied CSA seal and Mapúa red, gold, and modular-square visual references live in [`public/brand`](./public/brand/). The permanent product name has not yet been supplied.
 
 ## Evidence on Hand
 
@@ -74,5 +74,4 @@ The public Profile is mobile-first because peer advisees reach it from an NFC ta
 
 - Permanent product name.
 - Final evaluation-form URL and whether it is shared or specific to each assistant.
-- Final Mapúa University and CSA logo files, colors, and brand guidance.
 - Stable custom domain for permanent NFC URLs.

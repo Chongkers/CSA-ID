@@ -9,7 +9,7 @@ export function SiteHeader() {
         <Brand />
         <nav className="headerNav" aria-label="Primary navigation">
           <Link className="textLink" href="/id/demo">View a profile</Link>
-          <Link className="button buttonSmall" href="/login">Open your dashboard</Link>
+          <Link className="button buttonSmall" href="/login">Open dashboard</Link>
         </nav>
       </div>
     </header>

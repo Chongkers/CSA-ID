@@ -1,24 +1,16 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { getBindings } from "@/lib/cloudflare";
 import { getDb } from "@/lib/db";
-import { abuseReports, profiles } from "@/lib/db/schema";
-
-const reportInput = z.object({ profile: z.string().min(1).max(48), reason: z.enum(["impersonation", "malicious-link", "prohibited-content"]), details: z.string().trim().min(5).max(1000) });
+import { MAX_BODY_BYTES, readCappedText, submitReport } from "@/lib/reports";
 
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
-  const parsed = reportInput.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Add at least five characters of detail" }, { status: 400 });
-  const ip = request.headers.get("cf-connecting-ip") || "local";
-  const rateKey = `report-rate/${ip}`;
-  const env = getBindings();
-  if (await env.KV.get(rateKey)) return NextResponse.json({ error: "Please wait before sending another report" }, { status: 429 });
-  const [profile] = await getDb().select({ id: profiles.id }).from(profiles).where(eq(profiles.slug, parsed.data.profile)).limit(1);
-  if (!profile && parsed.data.profile !== "demo") return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-  await getDb().insert(abuseReports).values({ id: crypto.randomUUID(), profileId: profile?.id || null, reason: parsed.data.reason, details: parsed.data.details, status: "open", createdAt: Math.floor(Date.now() / 1000) });
-  await env.KV.put(rateKey, "1", { expirationTtl: 60 });
-  return NextResponse.json({ ok: true }, { status: 201 });
+  const text = await readCappedText(request);
+  if (text === null) return NextResponse.json({ error: `Report is too large (max ${MAX_BODY_BYTES} bytes)` }, { status: 413 });
+  let raw: unknown = null;
+  try { raw = JSON.parse(text); } catch {}
+  const env = getBindings() as CloudflareEnv & { TURNSTILE_SECRET_KEY?: string };
+  const result = await submitReport(raw, request.headers.get("cf-connecting-ip"), { db: getDb(), kv: env.KV, secret: env.TURNSTILE_SECRET_KEY });
+  return NextResponse.json(result.body, { status: result.status });
 }

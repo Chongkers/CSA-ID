@@ -28,6 +28,10 @@
       "id": "0ff2270b1f6e431fb53814834f29cd30"
     }
   ],
+  // Public Turnstile site key. This is Cloudflare's always-pass test key; replace it with the real one.
+  "vars": {
+    "TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
+  },
   "images": {
     "binding": "IMAGES"
   },

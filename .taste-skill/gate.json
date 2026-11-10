@@ -2,11 +2,20 @@
  "start": "2026-11-09T12:32:23.903Z",
  "round": 0,
  "idle": 0,
- "errors": 1,
+ "errors": 2,
  "status": "error",
  "history": [
   {
    "at": "2026-11-10T03:51:24.769Z",
+   "mode": "manual",
+   "status": "error",
+   "fails": 0,
+   "round": 0,
+   "reused": false,
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-10T04:41:54.992Z",
    "mode": "manual",
    "status": "error",
    "fails": 0,
@@ -18,18 +27,18 @@
  "max": 3,
  "marker": {
   "page": null,
-  "url": "http://localhost:3000/",
+  "url": "http://localhost:3002/",
   "root": null,
   "kind": "software",
-  "category": "digital profile builder",
-  "primary": "Create your profile",
+  "category": "student assistant NFC profile",
+  "primary": "Open your dashboard",
   "rounds": 3,
   "start": "2026-11-09T12:32:23.903Z",
   "by": "gate.mjs --start"
  },
  "manual": true,
- "fp": "51f4f97ebc113c29",
- "page": "http://localhost:3000/",
+ "fp": "71787a5f3bad5451",
+ "page": "http://localhost:3002/",
  "found": {
   "fails": [],
   "warns": [],
@@ -47,5 +56,5 @@
  "waived": [],
  "warnCount": 0,
  "note": "the copy (the page showed no <main>, <section> or <h1> to lint); consistency.mjs could not walk 1440, 390; check.mjs could not run (exit 2: check: timed out)",
- "at": "2026-11-10T03:51:24.774Z"
+ "at": "2026-11-10T04:41:54.998Z"
 }

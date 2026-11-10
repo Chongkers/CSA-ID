@@ -1,10 +1,10 @@
 {
  "page": null,
- "url": "http://localhost:3000/",
+ "url": "http://localhost:3002/",
  "root": null,
  "kind": "software",
- "category": "digital profile builder",
- "primary": "Create your profile",
+ "category": "student assistant NFC profile",
+ "primary": "Open your dashboard",
  "rounds": 3,
  "start": "2026-11-09T12:32:23.903Z",
  "by": "gate.mjs --start"

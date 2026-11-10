@@ -28,6 +28,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
   const [links, setLinks] = useState(initial.links.map((link) => ({ service: link.service as ProfileService, url: link.url })));
   const [notice, setNotice] = useState("Draft loaded");
   const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState(initial.profile.status);
   const [avatarUrl, setAvatarUrl] = useState(initial.profile.avatarKey ? `/media/${initial.profile.avatarKey}` : "");
   const [backgroundUrl, setBackgroundUrl] = useState(initial.profile.backgroundKey ? `/media/${initial.profile.backgroundKey}` : "");
   const avatarInput = useRef<HTMLInputElement>(null);
@@ -62,7 +63,17 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
     setBusy(false);
     if (!response.ok) return setNotice(result.error || "Profile could not be published");
     setNotice("Profile published");
+    setStatus("published");
     if (result.slug) { setSlug(result.slug); setClaimedSlug(result.slug); }
+  }
+
+  async function unpublish() {
+    setBusy(true); setNotice("Unpublishing profile…");
+    const response = await fetch("/api/profile/unpublish", { method: "POST" });
+    setBusy(false);
+    if (!response.ok) return setNotice("Profile could not be unpublished");
+    setNotice("Profile unpublished");
+    setStatus("draft");
   }
 
   async function upload(kind: "avatar" | "background", input: HTMLInputElement) {
@@ -89,7 +100,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
     <main className="dashboard">
       <header className="dashboardHeader">
         <Brand />
-        <div className="dashboardActions"><span className="saveState" role="status"><i />{notice}</span>{claimedSlug && <Link className="buttonSecondary buttonSmall" href={`/id/${slug}`}>View profile</Link>}<button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={() => save()}>Save draft</button><button className="button buttonSmall" disabled={busy} type="button" onClick={publish}>Publish profile</button></div>
+        <div className="dashboardActions"><span className="saveState" role="status"><i />{notice}</span>{claimedSlug && <Link className="buttonSecondary buttonSmall" href={`/id/${slug}`}>View profile</Link>}<button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={() => save()}>Save draft</button><button className="button buttonSmall" disabled={busy} type="button" onClick={publish}>{status === "published" ? "Publish changes" : "Publish profile"}</button>{status === "published" && <button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={unpublish}>Unpublish</button>}</div>
       </header>
       <div className="dashboardBody">
         <aside className="dashboardNav">
@@ -97,7 +108,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
           <div><div className="accountCard"><span>{initial.user.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><div><strong>{initial.user.name}</strong><small>{initial.user.email}</small></div></div><form action="/logout" method="post"><button className="logoutButton" type="submit">Sign out</button></form></div>
         </aside>
         <section className="editorPane">
-          <div className="editorHeading"><div><h1>{section}</h1><p className="headingContext">Private draft</p></div><span className="statusBadge">{initial.profile.status === "published" ? "Published" : "Not published"}</span></div>
+          <div className="editorHeading"><div><h1>{section}</h1><p className="headingContext">Private draft. Publishing or unpublishing can take up to 60 seconds to reach every location.</p></div><span className="statusBadge">{status === "published" ? "Published" : status === "suspended" ? "Suspended" : "Not published"}</span></div>
 
           {section === "Profile" && <div className="formStack">
             <div className="uploadRow"><div className="avatar avatarSmall" style={avatarUrl ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: "cover" } : undefined}>{avatarUrl ? "" : name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</div><div><input ref={avatarInput} hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => upload("avatar", event.target)} /><button className="buttonSecondary buttonSmall" type="button" onClick={() => avatarInput.current?.click()}>Choose photo</button><p>JPEG, PNG, or WebP. Up to 2 MB.</p></div></div>

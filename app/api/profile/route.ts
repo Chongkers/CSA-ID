@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentAccount } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
 import { draftSocialLinks, profiles } from "@/lib/db/schema";
 import { isSafeProfileUrl, profileInput } from "@/lib/profile-validation";
@@ -12,7 +12,7 @@ function sameOrigin(request: Request) {
 }
 
 export async function GET() {
-  const account = await getCurrentUser();
+  const account = await getCurrentAccount();
   if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const links = await getDb().select().from(draftSocialLinks).where(eq(draftSocialLinks.profileId, account.profile.id)).orderBy(draftSocialLinks.displayOrder);
   return NextResponse.json({ user: account.user, profile: account.profile, links });
@@ -20,7 +20,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
-  const account = await getCurrentUser();
+  const account = await getCurrentAccount();
   if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const parsed = profileInput.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Invalid profile" }, { status: 400 });

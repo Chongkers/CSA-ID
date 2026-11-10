@@ -225,7 +225,10 @@ h1, h2, h3 { letter-spacing: -.035em; line-height: 1.02; text-wrap: balance; }
 .publicBack { position: absolute; z-index: 3; top: 24px; left: 24px; min-height: 44px; display: inline-flex; align-items: center; gap: 9px; padding: 0 14px; border: 1px solid rgba(102, 16, 25, .2); border-radius: 8px; background: rgba(255, 253, 248, .94); color: var(--red-dark); text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 8px 24px rgba(72, 21, 15, .12); transition: transform .18s ease, background .18s ease; }
 .publicBack:hover { background: #fff; transform: translateY(-2px); }
 .publicBack:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
-.publicLinks a span { color: #78121a; font-size: 12px; font-weight: 600; }
+.publicLinks a { gap: 14px; }
+.publicLinks .socialLinkLabel { min-width: 0; display: inline-flex; align-items: center; gap: 12px; color: var(--ink); font-size: 14px; font-weight: 600; }
+.socialLinkLabel svg { width: 21px; height: 21px; flex: 0 0 auto; color: #78121a; }
+.externalLinkIcon { width: 18px; height: 18px; flex: 0 0 auto; color: #78121a; }
 
 @media (max-width: 560px) {
   .brandName small { display: none; }
@@ -246,4 +249,17 @@ h1, h2, h3 { letter-spacing: -.035em; line-height: 1.02; text-wrap: balance; }
   .publicCard { width: 100%; max-width: 100%; }
   .publicProfile { display: flex; align-items: center; justify-content: center; }
   .publicBack { position: fixed; top: 12px; left: 12px; min-height: 42px; padding-inline: 12px; }
+}
+
+@media (max-width: 420px) {
+  .publicProfile { align-items: flex-start; min-height: 100dvh; padding: 68px 12px 72px; overflow-y: auto; }
+  .publicCard { padding: 28px 16px 24px; }
+  .publicCsaLogo { width: 42px; height: 42px; top: 14px; right: 14px; }
+  .publicAvatar { width: 76px; height: 76px; margin-bottom: 18px; }
+  .publicCard h1 { font-size: clamp(30px, 10vw, 38px); }
+  .publicBio { margin-bottom: 22px; font-size: 14px; }
+  .publicLinks { margin: 22px 0; gap: 8px; }
+  .publicLinks a { min-height: 48px; padding-inline: 14px; }
+  .evaluationButton, .publicSave { min-height: 48px; }
+  .profileBrand { position: absolute; bottom: 16px; }
 }

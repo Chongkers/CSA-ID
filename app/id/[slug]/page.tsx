@@ -12,8 +12,19 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   if (slug !== "demo") notFound();
 
   return (
-    <main className="publicProfile">
-      <div className="publicBackdrop" aria-hidden="true"><MapuaSquares className="publicSquares" /></div>
+    <main
+      className="publicProfile"
+      data-has-user-background="false"
+      style={{ "--profile-background-image": "none" } as React.CSSProperties}
+    >
+      <Link className="publicBack" href="/" aria-label="Back to home">
+        <span aria-hidden="true">←</span>
+        Back to home
+      </Link>
+      <div className="publicBackdrop" aria-hidden="true">
+        <MapuaSquares className="publicSquares publicSquaresPrimary" />
+        <MapuaSquares className="publicSquares publicSquaresSecondary" />
+      </div>
       <section className="publicCard">
         <Image className="publicCsaLogo" src="/brand/csa-logo.jpg" width={64} height={64} alt="Mapúa University Center for Student Advising" />
         <div className="publicAvatar">AS</div>

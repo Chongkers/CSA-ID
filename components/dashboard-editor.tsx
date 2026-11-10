@@ -7,7 +7,7 @@ import { ProfileCard } from "./profile-card";
 
 const sections = ["Profile", "Appearance", "Links"] as const;
 
-export function DashboardEditor() {
+export function DashboardEditor({ email }: { email: string }) {
   const [section, setSection] = useState<(typeof sections)[number]>("Profile");
   const [name, setName] = useState("Alex Santos");
   const [role, setRole] = useState("Student assistant");
@@ -29,7 +29,7 @@ export function DashboardEditor() {
       <div className="dashboardBody">
         <aside className="dashboardNav">
           <div><p className="navLabel">Workspace</p>{sections.map((item) => <button key={item} type="button" className={section === item ? "selected" : ""} onClick={() => setSection(item)}><span>{item.slice(0, 1)}</span>{item}</button>)}</div>
-          <div className="accountCard"><span>AS</span><div><strong>Alex Santos</strong><small>alex@example.test</small></div></div>
+          <div className="accountCard"><span>{email.slice(0, 2).toUpperCase()}</span><div><small>{email}</small><form action="/logout" method="post"><button className="buttonSecondary buttonSmall" type="submit">Sign out</button></form></div></div>
         </aside>
         <section className="editorPane">
           <div className="editorHeading"><div><h1>{section}</h1><p className="headingContext">Draft profile</p></div><span className="statusBadge">Not published</span></div>

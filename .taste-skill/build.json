@@ -1,0 +1,11 @@
+{
+ "page": null,
+ "url": "http://localhost:3000/",
+ "root": null,
+ "kind": "software",
+ "category": "digital profile builder",
+ "primary": "Create your profile",
+ "rounds": 3,
+ "start": "2026-11-09T12:32:23.903Z",
+ "by": "gate.mjs --start"
+}

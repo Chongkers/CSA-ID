@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Digital Profile",
-  description: "Create one public profile for your links, photo, and NFC card.",
+  title: "CSA Student Assistant Profiles",
+  description: "Mapúa University CSA profiles for tutoring sessions, NFC sharing, and evaluation handoff.",
   robots: { index: false, follow: false },
   other: {
     "page-type": "software",

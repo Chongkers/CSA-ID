@@ -1,0 +1,21 @@
+# dependencies
+/node_modules
+
+# Next.js output
+/.next
+/out
+
+# local environment
+.env*
+!.env.example
+
+# local Impeccable state
+/.impeccable/config.local.json
+/.impeccable/questions/
+/.impeccable/mocks/
+/.impeccable/review/
+
+# editor and OS files
+.DS_Store
+Thumbs.db
+*.tsbuildinfo

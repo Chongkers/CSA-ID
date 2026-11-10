@@ -9,10 +9,10 @@ const sections = ["Profile", "Appearance", "Links"] as const;
 
 export function DashboardEditor() {
   const [section, setSection] = useState<(typeof sections)[number]>("Profile");
-  const [name, setName] = useState("Alex Morgan");
-  const [role, setRole] = useState("Product designer");
-  const [bio, setBio] = useState("I design useful software and write about the decisions behind it.");
-  const [color, setColor] = useState("#1f6b3a");
+  const [name, setName] = useState("Alex Santos");
+  const [role, setRole] = useState("Student assistant");
+  const [bio, setBio] = useState("Peer adviser for tutoring sessions at the Center for Student Advising.");
+  const [color, setColor] = useState("#b5121b");
   const [notice, setNotice] = useState("Draft saved");
 
   function publish() {
@@ -29,17 +29,17 @@ export function DashboardEditor() {
       <div className="dashboardBody">
         <aside className="dashboardNav">
           <div><p className="navLabel">Workspace</p>{sections.map((item) => <button key={item} type="button" className={section === item ? "selected" : ""} onClick={() => setSection(item)}><span>{item.slice(0, 1)}</span>{item}</button>)}</div>
-          <div className="accountCard"><span>AM</span><div><strong>Alex Morgan</strong><small>alex@example.test</small></div></div>
+          <div className="accountCard"><span>AS</span><div><strong>Alex Santos</strong><small>alex@example.test</small></div></div>
         </aside>
         <section className="editorPane">
           <div className="editorHeading"><div><h1>{section}</h1><p className="headingContext">Draft profile</p></div><span className="statusBadge">Not published</span></div>
 
           {section === "Profile" && <div className="formStack">
-            <div className="uploadRow"><div className="avatar avatarSmall">AM</div><div><button className="buttonSecondary buttonSmall" type="button">Choose photo</button><p>JPEG, PNG, or WebP. Up to 2 MB.</p></div></div>
+            <div className="uploadRow"><div className="avatar avatarSmall">AS</div><div><button className="buttonSecondary buttonSmall" type="button">Choose photo</button><p>JPEG, PNG, or WebP. Up to 2 MB.</p></div></div>
             <label className="field">Display name<input value={name} maxLength={128} onChange={(event) => setName(event.target.value)} /></label>
             <label className="field">Role or title<input value={role} maxLength={128} onChange={(event) => setRole(event.target.value)} /></label>
             <label className="field">Short bio<textarea value={bio} maxLength={500} rows={4} onChange={(event) => setBio(event.target.value)} /><span>{bio.length}/500</span></label>
-            <label className="field">Permanent profile address<div className="slugField"><span>profile.example/id/</span><input defaultValue="alex-morgan" aria-label="Profile slug" /></div><small>This address cannot change after you publish.</small></label>
+            <label className="field">Permanent profile address<div className="slugField"><span>profile.example/id/</span><input defaultValue="alex-santos" aria-label="Profile slug" /></div><small>This address cannot change after you publish.</small></label>
           </div>}
 
           {section === "Appearance" && <div className="formStack">
@@ -49,8 +49,8 @@ export function DashboardEditor() {
           </div>}
 
           {section === "Links" && <div className="formStack linksForm">
-            <p className="sectionIntro">Add the places where people can find your work. Links appear in this order.</p>
-            {[['LinkedIn', 'https://linkedin.com/in/alex'], ['Instagram', 'https://instagram.com/alex'], ['Website', 'https://alex.example']].map(([service, url], index) => <div className="linkRow" key={service}><span className="dragHandle">{index + 1}</span><div><strong>{service}</strong><input defaultValue={url} aria-label={`${service} URL`} /></div><button type="button" aria-label={`Remove ${service}`}>Remove</button></div>)}
+            <p className="sectionIntro">Put the evaluation form first, then add the social links peer advisees may need.</p>
+            {[["Evaluation form", "https://forms.example/evaluation"], ["LinkedIn", "https://linkedin.com/in/alex-santos"], ["Facebook", "https://facebook.com/alex.santos"]].map(([service, url], index) => <div className="linkRow" key={service}><span className="dragHandle">{index + 1}</span><div><strong>{service}</strong><input defaultValue={url} aria-label={`${service} URL`} /></div><button type="button" aria-label={`Remove ${service}`}>Remove</button></div>)}
             <button className="buttonSecondary addLink" type="button">Add social link</button>
           </div>}
         </section>

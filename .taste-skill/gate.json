@@ -1,0 +1,51 @@
+{
+ "start": "2026-11-09T12:32:23.903Z",
+ "round": 0,
+ "idle": 0,
+ "errors": 1,
+ "status": "error",
+ "history": [
+  {
+   "at": "2026-11-10T03:51:24.769Z",
+   "mode": "manual",
+   "status": "error",
+   "fails": 0,
+   "round": 0,
+   "reused": false,
+   "stopHookActive": false
+  }
+ ],
+ "max": 3,
+ "marker": {
+  "page": null,
+  "url": "http://localhost:3000/",
+  "root": null,
+  "kind": "software",
+  "category": "digital profile builder",
+  "primary": "Create your profile",
+  "rounds": 3,
+  "start": "2026-11-09T12:32:23.903Z",
+  "by": "gate.mjs --start"
+ },
+ "manual": true,
+ "fp": "51f4f97ebc113c29",
+ "page": "http://localhost:3000/",
+ "found": {
+  "fails": [],
+  "warns": [],
+  "crashed": [
+   "the copy (the page showed no <main>, <section> or <h1> to lint)",
+   "consistency.mjs could not walk 1440, 390",
+   "check.mjs could not run (exit 2: check: timed out)"
+  ],
+  "seconds": {
+   "consistency": 4,
+   "layout": 241
+  }
+ },
+ "open": [],
+ "waived": [],
+ "warnCount": 0,
+ "note": "the copy (the page showed no <main>, <section> or <h1> to lint); consistency.mjs could not walk 1440, 390; check.mjs could not run (exit 2: check: timed out)",
+ "at": "2026-11-10T03:51:24.774Z"
+}

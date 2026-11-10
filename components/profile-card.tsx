@@ -8,10 +8,10 @@ type ProfileCardProps = {
 
 export function ProfileCard({
   compact = false,
-  name = "Alex Morgan",
-  role = "Product designer",
-  bio = "I design useful software and write about the decisions behind it.",
-  primary = "#1f6b3a",
+  name = "Alex Santos",
+  role = "Student assistant",
+  bio = "Peer adviser for tutoring sessions at the Center for Student Advising.",
+  primary = "#b5121b",
 }: ProfileCardProps) {
   return (
     <article className={`profileCard ${compact ? "profileCardCompact" : ""}`} style={{ "--profile-accent": primary } as React.CSSProperties}>
@@ -24,9 +24,9 @@ export function ProfileCard({
         </div>
         <p className="profileBio">{bio}</p>
         <div className="profileLinks" aria-label="Profile links">
-          <span>LinkedIn</span><span>Instagram</span><span>Website</span>
+          <span>LinkedIn</span><span>Facebook</span><span>Instagram</span>
         </div>
-        <button className="saveContact" type="button">Save contact</button>
+        <button className="saveContact" type="button">Open evaluation form</button>
       </div>
     </article>
   );

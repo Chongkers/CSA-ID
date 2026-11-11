@@ -2,16 +2,15 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { getCurrentAccount } from "@/lib/auth/current-user";
+import { guardMutation } from "@/lib/http/mutation-guard";
 import { getDb } from "@/lib/db";
 import { purgeProfilePage } from "@/lib/edge-cache";
 import { draftSocialLinks, profiles, publishedProfiles, publishedSocialLinks, reservedSlugs } from "@/lib/db/schema";
 
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
-  const account = await getCurrentAccount();
-  if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const profile = account.profile;
+  const guard = await guardMutation(request, getCurrentAccount, { body: false });
+  if (!guard.ok) return guard.response;
+  const profile = guard.account.profile;
   if (!profile.slug || !profile.displayName || !profile.role || !profile.evaluationUrl) return NextResponse.json({ error: "Add a permanent address, name, role, and evaluation form before publishing" }, { status: 400 });
   if (profile.status === "suspended") return NextResponse.json({ error: "This profile is suspended" }, { status: 403 });
   const db = getDb();

@@ -121,6 +121,21 @@ describe("delete account", () => {
     expect(store.has(`${ORIGIN}/id/alice-id`)).toBe(false);
   });
 
+  it("changes nothing when the final user delete fails", async () => {
+    await t.d1.prepare("CREATE TRIGGER fail_user_delete BEFORE DELETE ON users BEGIN SELECT RAISE(ABORT, 'forced'); END").run();
+    try {
+      expect((await del()).status).toBe(503);
+    } finally {
+      await t.d1.prepare("DROP TRIGGER fail_user_delete").run();
+    }
+    expect(await t.db.select().from(users).where(eq(users.id, ids.alice.user))).toHaveLength(1);
+    expect(await t.db.select({ status: profiles.status }).from(profiles).where(eq(profiles.id, ids.alice.profile))).toEqual([{ status: "published" }]);
+    expect(await t.db.select().from(publishedProfiles).where(eq(publishedProfiles.profileId, ids.alice.profile))).toHaveLength(1);
+    expect(await t.db.select().from(publishedSocialLinks).where(eq(publishedSocialLinks.profileId, ids.alice.profile))).toHaveLength(1);
+    expect(await validateSession(t.db, aliceToken)).not.toBeNull();
+    expect((await kv.list({ prefix: `img/${ids.alice.profile}/` })).keys).toHaveLength(3);
+  });
+
   it("stays signed in and keeps the account when image deletion fails, so it can be retried", async () => {
     const realDelete = kv.delete.bind(kv);
     state.kv = { list: kv.list.bind(kv), delete: async () => { throw new Error("kv down"); } };

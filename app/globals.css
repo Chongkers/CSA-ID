@@ -225,8 +225,8 @@ h1, h2, h3 { letter-spacing: -.035em; line-height: 1.02; text-wrap: balance; }
 .publicCsaLogo { position: absolute; top: 22px; right: 22px; width: 56px; height: 56px; object-fit: cover; border-radius: 50%; }
 .publicAvatar { background: var(--red-dark); border-radius: 8px; }
 .publicKicker { color: #78121a; }
-.evaluationButton { min-height: 52px; padding: 0 18px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--action); color: white; text-decoration: none; font-weight: 600; transition: transform .18s ease, background .18s ease; }
-.evaluationButton:hover { background: var(--action-hover); transform: translateY(-2px); }
+.evaluationButton { min-height: 52px; padding: 0 18px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--profile-accent); color: white; text-decoration: none; font-weight: 600; transition: transform .18s ease, filter .18s ease; }
+.evaluationButton:hover { filter: brightness(.84); transform: translateY(-2px); }
 .buttonExternalIcon { width: 17px; height: 17px; margin-left: 9px; }
 .publicSave { background: #fffdf8; color: var(--ink); border: 1px solid #9f8b74; display: flex; align-items: center; justify-content: center; text-decoration: none; }
 .profileBrand { color: #35110d; background: rgba(255, 248, 223, .88); padding: 7px 10px; border-radius: 6px; }

@@ -14,11 +14,15 @@ export async function loadPublishedProfile(db: Db, slug: string) {
   return { ...row.published, links };
 }
 
-export async function unpublishProfile(db: Db, profileId: string, now = Math.floor(Date.now() / 1000)) {
+export function unpublishStatements(db: Db, profileId: string, now = Math.floor(Date.now() / 1000)) {
   const { publishedProfiles, publishedSocialLinks, profiles } = schema;
-  await db.batch([
+  return [
     db.delete(publishedSocialLinks).where(eq(publishedSocialLinks.profileId, profileId)),
     db.delete(publishedProfiles).where(eq(publishedProfiles.profileId, profileId)),
     db.update(profiles).set({ status: "draft", updatedAt: now }).where(and(eq(profiles.id, profileId), eq(profiles.status, "published"))),
-  ]);
+  ] as const;
+}
+
+export async function unpublishProfile(db: Db, profileId: string, now = Math.floor(Date.now() / 1000)) {
+  await db.batch(unpublishStatements(db, profileId, now));
 }

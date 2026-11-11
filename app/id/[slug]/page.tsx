@@ -6,6 +6,7 @@ import { SocialIcon, type SocialPlatform } from "@/components/social-icon";
 import { getDb } from "@/lib/db";
 import { loadPublishedProfile } from "@/lib/public/published-profile";
 
+// Profiles stay dynamic; the Worker caches only complete HTML documents.
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Mapúa CSA profile", robots: { index: false, follow: false } };
 

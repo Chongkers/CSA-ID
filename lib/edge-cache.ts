@@ -21,15 +21,25 @@ function unavailableResponse() {
 
 type Handler = (request: Request, env: unknown, ctx: { waitUntil(promise: Promise<unknown>): void }) => Promise<Response>;
 
+function isProfileDocumentRequest(request: Request) {
+  if (request.method !== "GET") return false;
+  if (!request.headers.get("accept")?.toLowerCase().includes("text/html")) return false;
+  if (request.headers.get("rsc") === "1") return false;
+  if (request.headers.has("next-router-prefetch")) return false;
+  if (request.headers.has("next-router-segment-prefetch")) return false;
+  return true;
+}
+
 export function withProfileEdgeCache(handler: Handler): Handler {
   return async (request, env, ctx) => {
-    const key = request.method === "GET" ? profileCacheKey(request.url) : null;
+    const key = isProfileDocumentRequest(request) ? profileCacheKey(request.url) : null;
     const edge = (globalThis as { caches?: { default?: Cache } }).caches?.default;
     if (!key || !edge) return handler(request, env, ctx);
     const hit = await edge.match(key);
     if (hit) return hit;
     const response = await handler(request, env, ctx);
     if (response.status !== 200 && response.status !== 404) return response;
+    if (response.status === 200 && !response.headers.get("content-type")?.toLowerCase().includes("text/html")) return response;
     let cacheable: Response;
     if (response.status === 404) { await response.body?.cancel(); cacheable = unavailableResponse(); }
     else { cacheable = new Response(response.body, response); cacheable.headers.set("Cache-Control", PROFILE_CACHE_CONTROL); }

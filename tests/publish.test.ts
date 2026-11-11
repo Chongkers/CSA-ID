@@ -64,6 +64,7 @@ describe("edge cache wrapper", () => {
   const fakeCache = { match: async (r: Request) => store.get(r.url)?.clone(), put: async (r: Request, res: Response) => void store.set(r.url, res), delete: async (r: Request) => store.delete(r.url) };
   Object.assign(globalThis, { caches: { default: fakeCache } });
   const ctx = { waitUntil: (p: Promise<unknown>) => void p };
+  const documentRequest = (url: string) => new Request(url, { headers: { accept: "text/html" } });
 
   it("keys only /id/<slug> and ignores queries", () => {
     expect(profileCacheKey("https://x.test/id/a?utm=1")?.url).toBe("https://x.test/id/a");
@@ -72,7 +73,7 @@ describe("edge cache wrapper", () => {
 
   it("returns byte-identical unavailable responses whatever the slug", async () => {
     const handler = withProfileEdgeCache(async (request) => new Response(`not found for ${request.url}`, { status: 404, headers: { "x-powered-by": "next", etag: request.url } }));
-    const [a, b] = await Promise.all([handler(new Request("https://x.test/id/missing-one"), {}, ctx), handler(new Request("https://x.test/id/another-slug"), {}, ctx)]);
+    const [a, b] = await Promise.all([handler(documentRequest("https://x.test/id/missing-one"), {}, ctx), handler(documentRequest("https://x.test/id/another-slug"), {}, ctx)]);
     expect(a.status).toBe(404);
     expect(b.status).toBe(404);
     expect(await a.text()).toBe(await b.text());
@@ -81,16 +82,35 @@ describe("edge cache wrapper", () => {
 
   it("caches 200 and 404 for 60s, never other statuses or routes", async () => {
     let calls = 0;
-    const handler = withProfileEdgeCache(async (request) => { calls++; return new Response("body", { status: new URL(request.url).pathname.endsWith("/500") ? 500 : 200 }); });
-    const first = await handler(new Request("https://x.test/id/a"), {}, ctx);
+    const handler = withProfileEdgeCache(async (request) => { calls++; return new Response("body", { status: new URL(request.url).pathname.endsWith("/500") ? 500 : 200, headers: { "content-type": "text/html" } }); });
+    const first = await handler(documentRequest("https://x.test/id/a"), {}, ctx);
     expect(first.headers.get("cache-control")).toBe("public, max-age=0, s-maxage=60");
-    await handler(new Request("https://x.test/id/a"), {}, ctx);
+    await handler(documentRequest("https://x.test/id/a"), {}, ctx);
     expect(calls).toBe(1);
-    await handler(new Request("https://x.test/id/500"), {}, ctx);
-    await handler(new Request("https://x.test/id/500"), {}, ctx);
+    await handler(documentRequest("https://x.test/id/500"), {}, ctx);
+    await handler(documentRequest("https://x.test/id/500"), {}, ctx);
     expect(calls).toBe(3);
     await handler(new Request("https://x.test/dashboard"), {}, ctx);
     await handler(new Request("https://x.test/dashboard"), {}, ctx);
     expect(calls).toBe(5);
+  });
+
+  it("never serves an RSC prefetch response as the profile document", async () => {
+    store.clear();
+    let calls = 0;
+    const handler = withProfileEdgeCache(async (request) => {
+      calls++;
+      const isRsc = request.headers.get("rsc") === "1";
+      return new Response(isRsc ? "3:[[\"children\"]]" : "<!DOCTYPE html><h1>Profile</h1>", {
+        headers: { "content-type": isRsc ? "text/x-component" : "text/html; charset=utf-8" },
+      });
+    });
+
+    await handler(new Request("https://x.test/id/a?_rsc=prefetch", { headers: { accept: "*/*", rsc: "1" } }), {}, ctx);
+    const document = await handler(documentRequest("https://x.test/id/a"), {}, ctx);
+
+    expect(document.headers.get("content-type")).toContain("text/html");
+    expect(await document.text()).toContain("<!DOCTYPE html>");
+    expect(calls).toBe(2);
   });
 });

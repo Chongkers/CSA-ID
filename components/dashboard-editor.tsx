@@ -123,7 +123,7 @@ export function DashboardEditor({ initial }: { initial: DashboardData }) {
     <main className="dashboard">
       <header className="dashboardHeader">
         <Brand />
-        <div className="dashboardActions"><span className="saveState" role="status"><i />{notice}</span>{claimedSlug && <Link className="buttonSecondary buttonSmall" href={`/id/${slug}`}>View profile</Link>}<button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={() => save()}>Save draft</button><button className="button buttonSmall" disabled={busy} type="button" onClick={publish}>{status === "published" ? "Publish changes" : "Publish profile"}</button>{status === "published" && <button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={unpublish}>Unpublish</button>}</div>
+        <div className="dashboardActions"><span className="saveState" role="status"><i />{notice}</span>{claimedSlug && <Link className="buttonSecondary buttonSmall" href={`/id/${slug}`}>View profile</Link>}<button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={() => save()}>Save draft</button><button className="button buttonSmall" disabled={busy} type="button" onClick={publish}><span className="publishLabelFull">{status === "published" ? "Publish changes" : "Publish profile"}</span><span className="publishLabelCompact">{status === "published" ? "Update" : "Publish"}</span></button>{status === "published" && <button className="buttonSecondary buttonSmall" disabled={busy} type="button" onClick={unpublish}>Unpublish</button>}</div>
         <details className="dashboardAccountMenu">
           <summary aria-label="Open account menu" title={userDisplayName}>
             <span aria-hidden="true">{userInitials}</span>

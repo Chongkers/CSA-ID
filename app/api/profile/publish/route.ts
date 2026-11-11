@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentAccount } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
+import { purgeProfilePage } from "@/lib/edge-cache";
 import { draftSocialLinks, profiles, publishedProfiles, publishedSocialLinks, reservedSlugs } from "@/lib/db/schema";
 
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
-  const account = await getCurrentUser();
+  const account = await getCurrentAccount();
   if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const profile = account.profile;
   if (!profile.slug || !profile.displayName || !profile.role || !profile.evaluationUrl) return NextResponse.json({ error: "Add a permanent address, name, role, and evaluation form before publishing" }, { status: 400 });
@@ -28,5 +29,6 @@ export async function POST(request: Request) {
   ];
   try { await db.batch(queries as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]]); }
   catch { return NextResponse.json({ error: "That permanent profile address is already taken" }, { status: 409 }); }
+  await purgeProfilePage(profile.slug, request.url);
   return NextResponse.json({ ok: true, slug: profile.slug });
 }

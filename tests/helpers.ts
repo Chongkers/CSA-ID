@@ -22,3 +22,11 @@ export async function createTestDb() {
   }
   return { db: drizzle(d1, { schema }), d1, dispose: () => mf.dispose() };
 }
+
+export async function multipartRequest(url: string, bytes: Uint8Array, type = "image/jpeg") {
+  const form = new FormData();
+  form.set("file", new File([bytes as BlobPart], "upload", { type }));
+  const encoded = new Request(url, { method: "POST", body: form });
+  const body = await encoded.arrayBuffer();
+  return new Request(url, { method: "POST", body, headers: { "content-type": encoded.headers.get("content-type")!, "content-length": String(body.byteLength) } });
+}

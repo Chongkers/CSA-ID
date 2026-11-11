@@ -1,35 +1,25 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import type { BatchItem } from "drizzle-orm/batch";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentAccount } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
-import { draftSocialLinks, profiles } from "@/lib/db/schema";
+import { readDraft, saveDraft } from "@/lib/profile-data";
 import { isSafeProfileUrl, profileInput } from "@/lib/profile-validation";
-
-function sameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  return !origin || origin === new URL(request.url).origin;
-}
+import { guardMutation } from "@/lib/http/mutation-guard";
 
 export async function GET() {
-  const account = await getCurrentUser();
+  const account = await getCurrentAccount();
   if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const links = await getDb().select().from(draftSocialLinks).where(eq(draftSocialLinks.profileId, account.profile.id)).orderBy(draftSocialLinks.displayOrder);
-  return NextResponse.json({ user: account.user, profile: account.profile, links });
+  const draft = await readDraft(getDb(), account.user.id);
+  if (!draft) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+  return NextResponse.json({ user: account.user, ...draft });
 }
 
 export async function PUT(request: Request) {
-  if (!sameOrigin(request)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
-  const account = await getCurrentUser();
-  if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const parsed = profileInput.safeParse(await request.json().catch(() => null));
+  const guard = await guardMutation(request, getCurrentAccount);
+  if (!guard.ok) return guard.response;
+  const parsed = profileInput.safeParse(guard.body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Invalid profile" }, { status: 400 });
   if (parsed.data.links.some((link) => !isSafeProfileUrl(link.service, link.url))) return NextResponse.json({ error: "Use the official HTTPS address for each social platform" }, { status: 400 });
-  const db = getDb();
-  const now = Math.floor(Date.now() / 1000);
-  const update = db.update(profiles).set({ displayName: parsed.data.displayName, role: parsed.data.role, bio: parsed.data.bio, accentColor: parsed.data.accentColor.toUpperCase(), evaluationUrl: parsed.data.evaluationUrl || null, slug: account.profile.slug ?? parsed.data.slug, updatedAt: now }).where(eq(profiles.id, account.profile.id));
-  const removeLinks = db.delete(draftSocialLinks).where(eq(draftSocialLinks.profileId, account.profile.id));
-  const inserts = parsed.data.links.map((link, index) => db.insert(draftSocialLinks).values({ id: crypto.randomUUID(), profileId: account.profile.id, service: link.service, url: link.url, displayOrder: index }));
-  await db.batch([update, removeLinks, ...inserts] as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]]);
+  const saved = await saveDraft(getDb(), guard.account.user.id, parsed.data);
+  if (!saved) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

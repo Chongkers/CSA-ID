@@ -49,6 +49,7 @@ beforeAll(async () => {
 });
 afterAll(async () => { await mf.dispose(); await t.dispose(); });
 beforeEach(async () => {
+  state.kv = kv;
   await t.db.delete(users);
   await t.db.delete(reservedSlugs);
   const keys = await kv.list();
@@ -136,13 +137,15 @@ describe("delete account", () => {
     expect((await kv.list({ prefix: `img/${ids.alice.profile}/` })).keys).toHaveLength(3);
   });
 
-  it("stays signed in and keeps the account when image deletion fails, so it can be retried", async () => {
-    const realDelete = kv.delete.bind(kv);
+  it("still deletes the account when image deletion fails afterwards", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
     state.kv = { list: kv.list.bind(kv), delete: async () => { throw new Error("kv down"); } };
-    expect((await del()).status).toBe(503);
-    expect(await validateSession(t.db, aliceToken)).not.toBeNull();
-    state.kv = { list: kv.list.bind(kv), delete: realDelete };
-    expect((await del()).status).toBe(200);
-    expect((await kv.list({ prefix: `img/${ids.alice.profile}/` })).keys).toHaveLength(0);
+    const res = await del();
+    expect(res.status).toBe(200);
+    expect(res.headers.get("set-cookie")).toContain(`${SESSION_COOKIE}=;`);
+    expect(await t.db.select().from(users).where(eq(users.id, ids.alice.user))).toHaveLength(0);
+    expect(await validateSession(t.db, aliceToken)).toBeNull();
+    expect(error).toHaveBeenCalledWith(expect.stringContaining(`img/${ids.alice.profile}/`), expect.any(Error));
+    error.mockRestore();
   });
 });

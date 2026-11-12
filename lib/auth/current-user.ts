@@ -7,6 +7,7 @@ import { SESSION_COOKIE, validateSession } from "./session";
 
 export async function getCurrentAccount() {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  if (!token) return null;
   const db = getDb();
   const user = await validateSession(db, token);
   if (!user) return null;

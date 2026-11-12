@@ -1,14 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { eq } from "drizzle-orm";
 import { MapuaSquares } from "@/components/mapua-squares";
 import { SocialIcon, type SocialPlatform } from "@/components/social-icon";
 import { getDb } from "@/lib/db";
-import { publishedProfiles, publishedSocialLinks } from "@/lib/db/schema";
+import { loadPublishedProfile } from "@/lib/public/published-profile";
 
-export const revalidate = 300;
-export function generateStaticParams() { return [{ slug: "demo" }]; }
+// Profiles stay dynamic; the Worker caches only complete HTML documents.
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Mapúa CSA profile", robots: { index: false, follow: false } };
 
 const demo = {
   profileId: "demo", slug: "demo", displayName: "Alex Santos", role: "Student assistant", bio: "Peer adviser for tutoring sessions at the Center for Student Advising.", accentColor: "#B5121B", avatarKey: null, backgroundKey: null, evaluationUrl: "https://forms.example/evaluation",
@@ -20,11 +20,7 @@ const labels: Record<string, string> = { linkedin: "LinkedIn", instagram: "Insta
 
 async function loadProfile(slug: string) {
   if (slug === "demo") return demo;
-  const db = getDb();
-  const [profile] = await db.select().from(publishedProfiles).where(eq(publishedProfiles.slug, slug)).limit(1);
-  if (!profile) return null;
-  const links = await db.select({ service: publishedSocialLinks.service, url: publishedSocialLinks.url }).from(publishedSocialLinks).where(eq(publishedSocialLinks.profileId, profile.profileId)).orderBy(publishedSocialLinks.displayOrder);
-  return { ...profile, links };
+  return loadPublishedProfile(getDb(), slug);
 }
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ slug: string }> }) {

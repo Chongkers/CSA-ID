@@ -1,0 +1,35 @@
+name: Bug
+description: Report something that doesn't work.
+title: "fix: "
+labels: ["needs-triage", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use the terms in GLOSSARY.md (User, Profile, Slug, Published Profile, and so on). Keep the title in Conventional Commits style, such as `fix(dashboard): show the save status on phones`.
+  - type: input
+    id: blocked-by
+    attributes:
+      label: Blocked by
+      description: Issues that must close first, such as `#5, #7`. Also add them to the title as `(blocked by #5, #7)`. Leave empty if none.
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: What happens, what you expected, and the steps to reproduce it. Include the page URL and the device or browser.
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Checkable outcomes that show the bug is fixed. One per line.
+      value: |
+        - [ ] 
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Optional screenshots, logs, or context.

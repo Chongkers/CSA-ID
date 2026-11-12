@@ -32,6 +32,7 @@ This builds the app and deploys the `csa-id` Worker to `https://csa-id.<account-
 |---------|----------|------|
 | `DB` | D1 database | `csa-id` |
 | `KV` | KV namespace | `csa-id` |
+| `IMAGES` | Images binding | (none) |
 
 Server code reads them through `lib/cloudflare.ts`:
 
@@ -51,7 +52,7 @@ After you change `wrangler.jsonc`, run `npm run cf-typegen` to regenerate `cloud
 
 ## Google sign-in and the database
 
-Sign-in uses Arctic with Google OAuth. Users and Sessions live in D1, with the schema in `lib/db/schema.ts` and migrations in `migrations/`.
+Sign-in uses Google OAuth through `oauth4webapi`. Users and Sessions live in D1, with the schema in `lib/db/schema.ts` and migrations in `migrations/`.
 
 Add the OAuth client to `.dev.vars` for local work (git ignores it):
 

@@ -19,8 +19,14 @@ You need Node.js, npm, Git, and the [GitHub CLI](https://cli.github.com/) (`gh`)
 2. Create `.dev.vars` for local secrets. Git ignores it.
 
    ```bash
-   echo "NEXTJS_ENV=development" > .dev.vars
+   cat > .dev.vars <<'EOF'
+   NEXTJS_ENV=development
+   TURNSTILE_SITE_KEY=1x00000000000000000000AA
+   TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+   EOF
    ```
+
+   The two Turnstile lines are Cloudflare's always-pass test keys. The real site key in `wrangler.jsonc` only works on the deployed hostname, and `.dev.vars` overrides it locally. Without them the report form cannot send a report.
 
 3. Create the local D1 database and apply the migrations in `migrations/`. The data lives in `.wrangler/`, which Git ignores.
 

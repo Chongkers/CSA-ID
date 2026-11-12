@@ -6,7 +6,7 @@ The app runs on Cloudflare Workers through the OpenNext Cloudflare adapter (`@op
 
 1. Run `npm install`.
 2. Sign in to Cloudflare once: `npx wrangler login`.
-3. Create a `.dev.vars` file with `NEXTJS_ENV=development`. Git ignores it.
+3. Create a `.dev.vars` file with `NEXTJS_ENV=development`, `TURNSTILE_SITE_KEY=1x00000000000000000000AA` and `TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA` (Cloudflare's test keys; the real site key in `wrangler.jsonc` rejects localhost). Git ignores it.
 
 ## Preview locally in the Workers runtime
 

@@ -108,8 +108,6 @@ When other tickets block yours, record the blockers in three places:
 - A title suffix: `feat: claim a permanent Slug (blocked by #5)`. Remove the suffix when every blocker is closed.
 - GitHub's native **Blocked by** relationship on the issue.
 
-Coding agents follow the same rules in [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
-
 ## Make the change
 
 ### Branch

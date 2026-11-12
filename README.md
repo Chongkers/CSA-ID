@@ -38,4 +38,3 @@ For Google sign-in, the Workers runtime preview, and the checks to run before a 
 | [PRODUCT.md](PRODUCT.md) | Who the product is for, its purpose, and its constraints |
 | [agent_technical_readme.md](agent_technical_readme.md) | Technical contract: architecture, data model, validation, uploads, routes |
 | [docs/cloudflare-workers.md](docs/cloudflare-workers.md) | Bindings, preview, deploy, and Google OAuth setup on Cloudflare |
-| [docs/agents/](docs/agents/) | How coding agents use the issue tracker, labels, and domain docs |

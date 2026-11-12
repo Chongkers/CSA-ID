@@ -337,8 +337,8 @@ Never retain the source upload. If the Images transformation quota or the KV wri
 
 ### `GET /login/google` and `GET /login/google/callback`
 
-- Start the Arctic authorization-code flow with `state` and PKCE, storing both in short-lived `HttpOnly` cookies.
-- On callback, verify `state`, exchange the code, validate the ID token claims, and require `email_verified`.
+- Start the `oauth4webapi` authorization-code flow with `state`, nonce, PKCE and `prompt=select_account`, storing the state, nonce and code verifier in short-lived `HttpOnly` cookies.
+- On callback, verify `state`, exchange the code, validate the ID token claims and nonce, and require `email_verified`.
 - Find or create the User by Google subject ID, create a Session, set the session cookie, and redirect to the dashboard.
 - Discard the Google tokens; never write them to D1, KV, logs, or cookies.
 

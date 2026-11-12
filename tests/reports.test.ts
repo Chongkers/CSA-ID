@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { abuseReports, profiles, users } from "@/lib/db/schema";
-import { MAX_BODY_BYTES, MAX_PER_PROFILE_PER_WINDOW, rateKeyFor, readCappedText, submitReport } from "@/lib/reports";
+import { MAX_BODY_BYTES, MAX_PER_PROFILE_PER_WINDOW, rateKeyFor, submitReport } from "@/lib/reports";
 import * as route from "@/app/api/reports/route";
 import { createTestDb } from "./helpers";
 
@@ -102,16 +102,19 @@ describe("submitReport", () => {
   });
 });
 
-describe("readCappedText", () => {
-  const post = (text: string, headers: Record<string, string> = {}) => new Request("http://x/api/reports", { method: "POST", body: text, headers });
-  it("rejects an oversized declared length before reading", async () => {
-    expect(await readCappedText(post("x", { "content-length": String(MAX_BODY_BYTES + 1) }))).toBeNull();
+describe("POST /api/reports guard", () => {
+  const post = (headers: Record<string, string>, text = "{}") => route.POST(new Request("http://x/api/reports", { method: "POST", body: text, headers }));
+  it("rejects a request with no Origin", async () => {
+    expect((await post({})).status).toBe(403);
+  });
+  it("rejects a cross-origin request", async () => {
+    expect((await post({ origin: "http://evil.test" })).status).toBe(403);
+  });
+  it("rejects an oversized declared length", async () => {
+    expect((await post({ origin: "http://x", "content-length": String(MAX_BODY_BYTES + 1) })).status).toBe(413);
   });
   it("rejects an oversized streamed body", async () => {
-    expect(await readCappedText(post("x".repeat(MAX_BODY_BYTES + 1)))).toBeNull();
-  });
-  it("returns a small body", async () => {
-    expect(await readCappedText(post('{"a":1}'))).toBe('{"a":1}');
+    expect((await post({ origin: "http://x" }, "x".repeat(MAX_BODY_BYTES + 1))).status).toBe(413);
   });
 });
 

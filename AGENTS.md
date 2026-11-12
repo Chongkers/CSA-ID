@@ -15,9 +15,17 @@ This app gives each Mapúa CSA student assistant a Published Profile at `/id/<sl
 ## Before you write code
 
 - Read the ticket in full: `gh issue view <n> --repo ymsrubio/CSA-ID --comments`. Do only what its **Done when** asks; list anything else you notice as a follow-up in the pull request.
-- Use the domain terms in [GLOSSARY.md](GLOSSARY.md) (User, Profile, Slug, Draft Profile, Published Profile, Social Link, Abuse Report, NFC Card) in code, tests, commits and issues. Its _Avoid_ words stay out.
+- Use the domain terms in [GLOSSARY.md](GLOSSARY.md) (User, Profile, Slug, Draft Profile, Published Profile, Social Link, Abuse Report, NFC Card) in code, tests, commits and issues. Its _Avoid_ words stay out. When a concept you need is missing from the glossary, raise it in the issue instead of coining a new word.
 - Read the sections of [agent_technical_readme.md](agent_technical_readme.md) that touch your area. It is the technical contract: architecture, data model, authorization, validation, uploads, routes. When your change contradicts it, say so in the pull request instead of silently diverging.
 - [PRODUCT.md](PRODUCT.md) explains who the users are and why the product exists.
+
+## Issues
+
+[CONTRIBUTING.md](CONTRIBUTING.md#pick-up-a-ticket) explains how to find, claim and open tickets, and what the labels mean. On top of that:
+
+- Claim the ticket (assignee plus `in-progress`) before writing code, and post progress notes and questions as dated comments on it.
+- A new issue gets a Conventional Commits title, the `needs-triage` label, and a body with three headings: **What**, **Done when** (checkable outcomes), and **Notes**.
+- Record a blocker in GitHub's native dependency too: `gh api -X POST repos/ymsrubio/CSA-ID/issues/<n>/dependencies/blocked_by -F issue_id=<blocker's REST id>`.
 
 ## Hard constraints
 
@@ -58,7 +66,7 @@ npx opennextjs-cloudflare build
 
 The last one builds the Worker the way production does; a change can pass `next build` and still fail it. The **Workers Builds** check on a pull request always fails and is expected to; trust the local build.
 
-For a change a user can see, also run the app (`npm run dev`, then **Use local development account** at `/login`) and check the change in the browser.
+For a change a user can see, also prove it in the running app. The `verify` skill in [.claude/skills/verify/SKILL.md](.claude/skills/verify/SKILL.md) launches the app, signs in as the local demo User, and drives the dashboard and public page; its `features/` files list what to check per feature. Agents other than Claude Code can read and follow it directly. Put the evidence (screenshots, status messages) in the pull request.
 
 ## Commits and pull requests
 

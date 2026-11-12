@@ -21,10 +21,18 @@ function unavailableResponse() {
 
 type Handler = (request: Request, env: unknown, ctx: { waitUntil(promise: Promise<unknown>): void }) => Promise<Response>;
 
+function isProfileDocumentRequest(request: Request) {
+  if (request.method !== "GET") return false;
+  if (!request.headers.get("accept")?.toLowerCase().includes("text/html")) return false;
+  if (request.headers.has("rsc") || new URL(request.url).searchParams.has("_rsc")) return false;
+  if (request.headers.has("next-router-prefetch")) return false;
+  if (request.headers.has("next-router-segment-prefetch")) return false;
+  return true;
+}
+
 export function withProfileEdgeCache(handler: Handler): Handler {
   return async (request, env, ctx) => {
-    const isRsc = request.headers.has("rsc") || new URL(request.url).searchParams.has("_rsc");
-    const key = request.method === "GET" && !isRsc ? profileCacheKey(request.url) : null;
+    const key = isProfileDocumentRequest(request) ? profileCacheKey(request.url) : null;
     const edge = (globalThis as { caches?: { default?: Cache } }).caches?.default;
     if (!key || !edge) return handler(request, env, ctx);
     const hit = await edge.match(key);

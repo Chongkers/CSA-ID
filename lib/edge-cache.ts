@@ -23,13 +23,15 @@ type Handler = (request: Request, env: unknown, ctx: { waitUntil(promise: Promis
 
 export function withProfileEdgeCache(handler: Handler): Handler {
   return async (request, env, ctx) => {
-    const key = request.method === "GET" ? profileCacheKey(request.url) : null;
+    const isRsc = request.headers.has("rsc") || new URL(request.url).searchParams.has("_rsc");
+    const key = request.method === "GET" && !isRsc ? profileCacheKey(request.url) : null;
     const edge = (globalThis as { caches?: { default?: Cache } }).caches?.default;
     if (!key || !edge) return handler(request, env, ctx);
     const hit = await edge.match(key);
     if (hit) return hit;
     const response = await handler(request, env, ctx);
-    if (response.status !== 200 && response.status !== 404) return response;
+    const isHtml200 = response.status === 200 && response.headers.get("content-type")?.startsWith("text/html");
+    if (!isHtml200 && response.status !== 404) return response;
     let cacheable: Response;
     if (response.status === 404) { await response.body?.cancel(); cacheable = unavailableResponse(); }
     else { cacheable = new Response(response.body, response); cacheable.headers.set("Cache-Control", PROFILE_CACHE_CONTROL); }

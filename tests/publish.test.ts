@@ -81,7 +81,7 @@ describe("edge cache wrapper", () => {
 
   it("caches 200 and 404 for 60s, never other statuses or routes", async () => {
     let calls = 0;
-    const handler = withProfileEdgeCache(async (request) => { calls++; return new Response("body", { status: new URL(request.url).pathname.endsWith("/500") ? 500 : 200 }); });
+    const handler = withProfileEdgeCache(async (request) => { calls++; return new Response("body", { status: new URL(request.url).pathname.endsWith("/500") ? 500 : 200, headers: { "content-type": "text/html" } }); });
     const first = await handler(new Request("https://x.test/id/a"), {}, ctx);
     expect(first.headers.get("cache-control")).toBe("public, max-age=0, s-maxage=60");
     await handler(new Request("https://x.test/id/a"), {}, ctx);
@@ -92,5 +92,16 @@ describe("edge cache wrapper", () => {
     await handler(new Request("https://x.test/dashboard"), {}, ctx);
     await handler(new Request("https://x.test/dashboard"), {}, ctx);
     expect(calls).toBe(5);
+  });
+
+  it("never serves an RSC payload to a plain visit", async () => {
+    const handler = withProfileEdgeCache(async (request) =>
+      request.headers.get("rsc") === "1"
+        ? new Response('1:"$Sreact.fragment"', { headers: { "content-type": "text/x-component" } })
+        : new Response("<html></html>", { headers: { "content-type": "text/html; charset=utf-8" } }));
+    await handler(new Request("https://x.test/id/rsc?_rsc=abc", { headers: { RSC: "1" } }), {}, ctx);
+    const plain = await handler(new Request("https://x.test/id/rsc"), {}, ctx);
+    expect(plain.headers.get("content-type")).toContain("text/html");
+    expect(await plain.text()).toBe("<html></html>");
   });
 });

@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
-import { publishedProfiles, users } from "@/lib/db/schema";
+import { publishedProfiles, sessions, users } from "@/lib/db/schema";
 import { readDraft } from "@/lib/profile-data";
-import { deleteUserSessions, type Db } from "@/lib/auth/session";
-import { unpublishProfile } from "@/lib/public/published-profile";
+import type { Db } from "@/lib/auth/session";
+import { unpublishStatements } from "@/lib/public/published-profile";
 
 export async function exportAccount(db: Db, userId: string, now = new Date()) {
   const draft = await readDraft(db, userId);
@@ -29,20 +29,29 @@ async function deleteImages(kv: KVNamespace, profileId: string, known: Array<str
 }
 
 /**
- * Order matters for retries. The public page goes first and the images second,
- * while the User still has a Session, so a failed image delete can be retried.
- * The user row goes last; it cascades to the Profile, Draft Social Links and
- * Sessions, and `reserved_slugs` keeps the Slug with its profile_id cleared.
+ * All D1 writes run in one batch, which D1 applies as a single transaction, so a
+ * failure leaves the account exactly as it was and the User can retry. Deleting
+ * the user row cascades to the Profile, Draft Social Links and Sessions, and
+ * `reserved_slugs` keeps the Slug with its profile_id cleared.
+ *
+ * KV cannot join that transaction, so images go only after the account is gone.
+ * If that fails the account is still deleted; the leftover keys sit under
+ * unguessable `img/<profileId>/` paths and are logged for cleanup.
  */
 export async function deleteAccount(db: Db, kv: KVNamespace, userId: string) {
   const draft = await readDraft(db, userId);
   if (!draft) return null;
   const { profile } = draft;
   const [published] = await db.select({ avatarKey: publishedProfiles.avatarKey, backgroundKey: publishedProfiles.backgroundKey }).from(publishedProfiles).where(eq(publishedProfiles.profileId, profile.id)).limit(1);
-  await unpublishProfile(db, profile.id);
-  const purge = { slug: profile.slug };
-  await deleteImages(kv, profile.id, [profile.avatarKey, profile.backgroundKey, published?.avatarKey ?? null, published?.backgroundKey ?? null]);
-  await deleteUserSessions(db, userId);
-  await db.delete(users).where(eq(users.id, userId));
-  return purge;
+  await db.batch([
+    ...unpublishStatements(db, profile.id),
+    db.delete(sessions).where(eq(sessions.userId, userId)),
+    db.delete(users).where(eq(users.id, userId)),
+  ]);
+  try {
+    await deleteImages(kv, profile.id, [profile.avatarKey, profile.backgroundKey, published?.avatarKey ?? null, published?.backgroundKey ?? null]);
+  } catch (error) {
+    console.error(`account deleted but images under img/${profile.id}/ were not`, error);
+  }
+  return { slug: profile.slug };
 }

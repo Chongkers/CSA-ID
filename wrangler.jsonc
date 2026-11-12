@@ -28,6 +28,10 @@
       "id": "0ff2270b1f6e431fb53814834f29cd30"
     }
   ],
+  // Public Turnstile site key for csa-id.yuanmiguelrubio.workers.dev. Local dev overrides it in .dev.vars with a test key.
+  "vars": {
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAF-uRCV8f4yJxAnq"
+  },
   "images": {
     "binding": "IMAGES"
   },

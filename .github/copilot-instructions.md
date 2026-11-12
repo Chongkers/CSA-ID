@@ -1,0 +1,1 @@
+Follow the rules in [AGENTS.md](../AGENTS.md) at the repository root. It is the single source of truth for coding agents in this repository: constraints, security rules, migrations, the checks to run, and commit and pull request conventions.

@@ -2,6 +2,8 @@
 
 This guide takes you from a fresh clone to a merged pull request. Read [GLOSSARY.md](GLOSSARY.md) first and use its terms (User, Profile, Slug, Draft Profile, Published Profile, and so on) in issues, commits, code and tests.
 
+If you work with an AI coding agent (Claude Code, Codex, Cursor, Copilot, Gemini or another), point it at [AGENTS.md](AGENTS.md). It holds the project's rules for agents, and the owner reviews agent work against it.
+
 ## Set up your machine
 
 You need Node.js, npm, Git, and the [GitHub CLI](https://cli.github.com/) (`gh`).
@@ -217,6 +219,7 @@ Merging to `main` deploys the Worker through Cloudflare Workers Builds. The Work
 ## Where to read more
 
 - [README.md](README.md): what the app is, and the quickstart.
+- [AGENTS.md](AGENTS.md): the rules a coding agent follows in this repository.
 - [PRODUCT.md](PRODUCT.md): users, purpose, and constraints.
 - [agent_technical_readme.md](agent_technical_readme.md): architecture, data model, validation, uploads, and routes.
 - [docs/cloudflare-workers.md](docs/cloudflare-workers.md): bindings, preview, deploy, and OAuth on Cloudflare.

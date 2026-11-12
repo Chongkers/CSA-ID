@@ -24,7 +24,7 @@ type Handler = (request: Request, env: unknown, ctx: { waitUntil(promise: Promis
 function isProfileDocumentRequest(request: Request) {
   if (request.method !== "GET") return false;
   if (!request.headers.get("accept")?.toLowerCase().includes("text/html")) return false;
-  if (request.headers.get("rsc") === "1") return false;
+  if (request.headers.has("rsc") || new URL(request.url).searchParams.has("_rsc")) return false;
   if (request.headers.has("next-router-prefetch")) return false;
   if (request.headers.has("next-router-segment-prefetch")) return false;
   return true;
@@ -38,8 +38,8 @@ export function withProfileEdgeCache(handler: Handler): Handler {
     const hit = await edge.match(key);
     if (hit) return hit;
     const response = await handler(request, env, ctx);
-    if (response.status !== 200 && response.status !== 404) return response;
-    if (response.status === 200 && !response.headers.get("content-type")?.toLowerCase().includes("text/html")) return response;
+    const isHtml200 = response.status === 200 && response.headers.get("content-type")?.startsWith("text/html");
+    if (!isHtml200 && response.status !== 404) return response;
     let cacheable: Response;
     if (response.status === 404) { await response.body?.cancel(); cacheable = unavailableResponse(); }
     else { cacheable = new Response(response.body, response); cacheable.headers.set("Cache-Control", PROFILE_CACHE_CONTROL); }

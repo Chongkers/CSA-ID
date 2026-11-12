@@ -28,5 +28,5 @@ export async function multipartRequest(url: string, bytes: Uint8Array, type = "i
   form.set("file", new File([bytes as BlobPart], "upload", { type }));
   const encoded = new Request(url, { method: "POST", body: form });
   const body = await encoded.arrayBuffer();
-  return new Request(url, { method: "POST", body, headers: { "content-type": encoded.headers.get("content-type")!, "content-length": String(body.byteLength) } });
+  return new Request(url, { method: "POST", body, headers: { origin: new URL(url).origin, "content-type": encoded.headers.get("content-type")!, "content-length": String(body.byteLength) } });
 }

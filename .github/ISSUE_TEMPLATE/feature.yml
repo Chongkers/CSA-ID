@@ -1,0 +1,35 @@
+name: Feature
+description: Ask for new or changed behavior.
+title: "feat: "
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use the terms in GLOSSARY.md (User, Profile, Slug, Published Profile, and so on). Keep the title in Conventional Commits style, such as `feat: claim a permanent Slug`.
+  - type: input
+    id: blocked-by
+    attributes:
+      label: Blocked by
+      description: Issues that must close first, such as `#5, #7`. Also add them to the title as `(blocked by #5, #7)`. Leave empty if none.
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: What to build or change, and for whom.
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Checkable outcomes. One per line.
+      value: |
+        - [ ] 
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Optional context, links, or constraints.

@@ -13,7 +13,9 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply csa-id --local",
-    "db:migrate:remote": "wrangler d1 migrations apply csa-id --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply csa-id --remote",
+    "prepare": "husky",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.16",
@@ -35,6 +37,8 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.0",
     "eslint-visitor-keys": "^3.4.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "miniflare": "^4.20260730.0",
     "typescript": "^5.9.0",
     "vitest": "^5.1.0",

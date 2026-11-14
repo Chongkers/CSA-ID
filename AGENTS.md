@@ -49,7 +49,7 @@ The app is one Cloudflare Worker on the **Workers Free plan**, built with OpenNe
 
 Change `lib/db/schema.ts`, then run `npm run db:generate` and `npm run db:migrate:local`, and commit the new files in `migrations/`. `npm test` applies every migration to an in-memory D1.
 
-Merging to `main` deploys at once, so the owner applies a new migration to the live D1 database **before** the code that needs it merges. Write each migration so the code already on `main` keeps working after it runs. Mark the migration in the pull request so the owner sees it.
+Merging to `main` deploys to the live site, and every preview (including `dev`'s) already runs against the live D1 database. So the owner applies a new migration to the live D1 database **before** the code that needs it merges into `dev`. Write each migration so the code already on `main` and `dev` keeps working after it runs. Mark the migration in the pull request so the owner sees it.
 
 Live systems belong to the owner: agents never run `npm run db:migrate:remote`, `npm run deploy`, `wrangler deploy`, `wrangler secret put`, or any other `--remote` command.
 
@@ -64,15 +64,31 @@ npx tsc --noEmit
 npx opennextjs-cloudflare build
 ```
 
-The last one builds the Worker the way production does; a change can pass `next build` and still fail it. The **Workers Builds** check on a pull request always fails and is expected to; trust the local build.
+The last one builds the Worker the way production does; a change can pass `next build` and still fail it. GitHub Actions runs the same four as the required **checks** job on every pull request, but run them locally first.
 
-For a change a user can see, also prove it in the running app. The `verify` skill in [.claude/skills/verify/SKILL.md](.claude/skills/verify/SKILL.md) launches the app, signs in as the local demo User, and drives the dashboard and public page; its `features/` files list what to check per feature. Agents other than Claude Code can read and follow it directly. Put the evidence (screenshots, status messages) in the pull request.
+For a change a user can see, also prove it in the running app, locally and on the pull request's preview link. The `verify` skill in [.claude/skills/verify/SKILL.md](.claude/skills/verify/SKILL.md) launches the app, signs in as the local demo User, and drives the dashboard and public page; its `features/` files list what to check per feature. Agents other than Claude Code can read and follow it directly. Put the evidence (screenshots, status messages) in the pull request.
+
+## Branches and releases
+
+- `dev` is the default branch. Branch from the latest `dev` as `<type>/<short-description>` and open the pull request into `dev`. Never target `main`.
+- Nobody pushes directly to `main` or `dev`. Every change lands through a pull request with passing checks.
+- A release is a pull request from `dev` into `main`, merged with a merge commit (not squash). Only the owner opens and merges it. Merging it deploys to the live site.
+- A hotfix takes the same path, just faster: a `fix/...` branch from `dev`, a pull request into `dev`, then a release pull request into `main`.
+- Cloudflare Workers Builds uploads a preview of every pull request branch and of `dev`, and posts its link on the **Workers Builds: csa-id** check. Put the preview link and the `verify` evidence in the pull request.
+
+## Previews use the live database
+
+Previews run on the same `csa-id` Worker as the live site and share its D1 database and KV namespace. Anything you do on a preview happens to real data.
+
+- Test on a preview only with your own test accounts and test Profiles.
+- Never file an Abuse Report, delete, unpublish or edit a real student assistant's Profile on a preview.
+- Never run a destructive request (account deletion, bulk changes, load tests) against a preview.
+- Do heavy or destructive testing locally, where D1 and KV live in `.wrangler/`.
 
 ## Commits and pull requests
 
 - One ticket per pull request. The body starts with `Closes #<n>` and follows `.github/pull_request_template.md`.
 - Commit subjects and the pull request title use Conventional Commits: `<type>(<scope>): <summary>`, imperative, lowercase after the colon, no trailing period. Types and examples are in [CONTRIBUTING.md](CONTRIBUTING.md#commit).
-- Branch from the latest `main` as `<type>/<short-description>`.
 - The owner merges. Agents open the pull request and stop there.
 
 ## Files you leave as they are

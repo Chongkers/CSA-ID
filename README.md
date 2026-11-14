@@ -29,6 +29,15 @@ Open <http://localhost:3000/login> and select **Use local development account**.
 
 For Google sign-in, the Workers runtime preview, and the checks to run before a pull request, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## How changes ship
+
+- `dev` is the default branch. Branch from `dev` and open pull requests into `dev`.
+- GitHub Actions runs the tests, lint, type check and Worker build on every pull request. Each pull request also gets a Cloudflare preview link.
+- Previews share the live database. Test there only with test accounts, and never touch real Profiles.
+- The owner ships `dev` to the live site with a release pull request from `dev` into `main`. Merging to `main` deploys.
+
+[CONTRIBUTING.md](CONTRIBUTING.md#open-a-pull-request) has the details, including releases and hotfixes.
+
 ## Documentation
 
 | File | What it covers |

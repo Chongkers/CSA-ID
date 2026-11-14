@@ -120,13 +120,15 @@ When other tickets block yours, record the blockers in three places:
 
 ### Branch
 
-Branch from the latest `main`. Name the branch `<type>/<short-description>`, with a type from the commit list below:
+`dev` is the default branch. Branch from the latest `dev`. Name the branch `<type>/<short-description>`, with a type from the commit list below:
 
 ```bash
-git switch main
+git switch dev
 git pull
 git switch -c fix/dashboard-phone-buttons
 ```
+
+Nobody pushes directly to `dev` or `main`. Every change reaches them through a pull request.
 
 ### Commit
 
@@ -161,7 +163,7 @@ npm run db:migrate:local
 
 Commit the new files in `migrations/`. `npm test` applies every migration to an in-memory D1, so the tests run against the new schema.
 
-**Apply a new migration to the live D1 database before the code that needs it merges.** Merging to `main` deploys the Worker at once. If the code arrives before the schema, the live site breaks. Write migrations so that the code already on `main` still works after the migration runs.
+**Apply a new migration to the live D1 database before the code that needs it merges into `dev`.** Previews of `dev` and of every pull request already run against the live D1 database, and a release to `main` deploys the live site. If the code arrives before the schema, the preview or the live site breaks. Write migrations so that the code already on `main` and `dev` still works after the migration runs.
 
 Only people with access to the Cloudflare account can change the live database. Ask the repository owner to apply it, or, if you have access:
 
@@ -201,26 +203,55 @@ npx opennextjs-cloudflare build
 
 The last command builds the Worker the way production does. A change can pass `next build` and still fail here.
 
+GitHub Actions runs the same four checks as the **checks** job on every pull request. A pull request can't merge until it passes.
+
 ### Submit
+
+Open the pull request into `dev`:
 
 ```bash
 git push -u origin HEAD
-gh pr create --repo ymsrubio/CSA-ID
+gh pr create --repo ymsrubio/CSA-ID --base dev
 ```
 
 The pull request template asks for:
 
 - `Closes #<n>`, so merging the pull request closes the ticket.
 - A short summary of what changed and why.
+- The preview link and proof that the change works there.
 - The checklist of checks, plus the live migration if there is one.
+
+### Test on the preview
+
+Cloudflare Workers Builds builds every pull request branch and uploads it as a preview of the `csa-id` Worker. When it finishes, the **Workers Builds: csa-id** check on the pull request links to the build, and Cloudflare comments the preview URL on the pull request. Open it and check your change there, because some bugs only show on Cloudflare's real edge. Put the link and your evidence (screenshots, what you checked) in the pull request.
+
+**The preview uses the live database.** It runs on the same Worker as the live site and shares its D1 database and KV namespace, so everything you do there changes real data:
+
+- Use only your own test accounts and test Profiles.
+- Never file an Abuse Report, delete, unpublish or edit a real student assistant's Profile.
+- Never run account deletion, bulk changes or load tests against a preview. Do that locally.
+
+Google sign-in and the report form's Turnstile check may not work on a preview URL, because Google and Turnstile only accept the hostnames registered for the live site. Test signed-in flows locally with the local development account.
 
 Give the pull request a Conventional Commits title, because it becomes the commit subject on `main`.
 
 ### Review and merge
 
-The repository owner reviews each pull request. Pull requests are squash-merged into `main`, and the branch is deleted after the merge.
+The repository owner reviews each pull request. Pull requests are squash-merged into `dev`, and the branch is deleted after the merge. After the merge, `dev` gets its own preview.
 
-Merging to `main` deploys the Worker through Cloudflare Workers Builds. The Workers Builds check on a pull request is expected to fail and does not block a merge. Rely on the local `npx opennextjs-cloudflare build` instead.
+### Releases
+
+Only the owner ships to the live site:
+
+1. Open a pull request from `dev` into `main`, titled like `chore: release 2026-11-14`, listing the pull requests it ships.
+2. Check `dev`'s preview once more and wait for the **checks** job to pass.
+3. Merge with **Create a merge commit**, not squash, so `dev` and `main` keep the same history.
+
+Merging into `main` deploys the Worker to the live site through Cloudflare Workers Builds.
+
+### Hotfixes
+
+A hotfix takes the same path, just faster. Branch `fix/...` from `dev`, open a pull request into `dev`, check the preview, merge, then open the release pull request from `dev` into `main` right away.
 
 ## Where to read more
 

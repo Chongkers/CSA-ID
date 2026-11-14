@@ -35,6 +35,30 @@
   "images": {
     "binding": "IMAGES"
   },
+  // Pull request and dev previews (`wrangler preview` in Workers Builds). They deliberately share the LIVE D1 and KV,
+  // as the owner decided: test on a preview only with test accounts. WORKER_SELF_REFERENCE is left out because
+  // previews can't take service bindings; OpenNext only needs it for revalidation queues, which this app doesn't use.
+  "previews": {
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "csa-id",
+        "database_id": "e10ae114-9102-4133-8305-b349f5497788"
+      }
+    ],
+    "kv_namespaces": [
+      {
+        "binding": "KV",
+        "id": "0ff2270b1f6e431fb53814834f29cd30"
+      }
+    ],
+    "images": {
+      "binding": "IMAGES"
+    },
+    "vars": {
+      "TURNSTILE_SITE_KEY": "0x4AAAAAAF-uRCV8f4yJxAnq"
+    }
+  },
   "observability": {
     "enabled": true
   }
